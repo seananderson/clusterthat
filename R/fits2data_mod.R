@@ -26,7 +26,7 @@ fits2data_mod <- function(fits, fo, ffmsy, bbmsy, wts) {
   rownames(df) <- NULL
 
 
-  cv <- function(x) stats::sd(x) / stats::mean(x)
+  cv <- function(x) stats::sd(x) / mean(x)
 
   df <-
     data.frame(model_id = 1:ncol(fo),

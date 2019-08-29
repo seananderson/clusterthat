@@ -4,7 +4,7 @@
 \alias{fits2data_mod}
 \title{Get model level data}
 \usage{
-fits2data_mod(fits, fo, ffmsy, bbmsy)
+fits2data_mod(fits, fo, ffmsy, bbmsy, wts)
 }
 \arguments{
 \item{fits}{a list containing the elements}
