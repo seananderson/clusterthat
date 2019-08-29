@@ -22,9 +22,19 @@ library(clusterthat)
 We will work with the example haddock data. Let's add some features from the timeseries data into our model data set that we will use for the clustering.
 
 ```{r, warning=FALSE}
-df <- add_features_flr(simg3_mod, simg3_ts) %>%
+sim_ts <-
+  rbind(
+    simg3_ts,
+    sims3_ts %>% mutate(model_id = model_id + max(model_id))
+  )
+sim_mod <-
+  rbind(
+    simg3_mod,
+    sims3_mod %>% mutate(model_id = model_id + max(model_id))
+  )
+ 
+df <- add_features_flr(sim_mod, sim_ts) %>%
   dplyr::filter(!is.na(log_ffmsy_median))
-dplyr::glimpse(df)
 ```
 
 We will also want to scale the columns so that the features get equal weighting in the clustering.
@@ -38,13 +48,13 @@ We can evaluate the support from various numbers of clusters using the following
 
 ```{r}
 factoextra::fviz_nbclust(df_scaled, cluster::pam, method = "silhouette",
-  k.max = 15)
+  k.max = 25)
 ```
 
 We are looking for a number of clusters where the average silhouette width hits a maximum. The average silhouette width reaches a maximum at 4 clusters. We will work with that number here on in.
 
 ```{r, warnings = FALSE}
-m_pam <- cluster::pam(df_scaled, k = 9)
+m_pam <- cluster::pam(df_scaled, k = 17)
 plot_clusters(m_pam, data = df_scaled, colour_vector = as.factor(m_pam$clustering),
   colour_label = "Cluster")
 ```
@@ -53,9 +63,9 @@ The default dissimilarity metric is the euclidean distance (the root of the sum 
 
 ```{r, warnings = FALSE}
 factoextra::fviz_nbclust(df_scaled, cluster::pam, method = "silhouette",
-  metric = "manhattan", k.max = 15)
+  metric = "manhattan", k.max = 25)
 
-m_pam_manhattan <- cluster::pam(df_scaled, k = 9, metric = "manhattan")
+m_pam_manhattan <- cluster::pam(df_scaled, k = 21, metric = "manhattan")
 
 plot_clusters(m_pam_manhattan, data = df_scaled,
   colour_vector = as.factor(m_pam_manhattan$clustering),
