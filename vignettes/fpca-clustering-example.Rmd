@@ -1,0 +1,118 @@
+---
+title: "Functional Principle Component Analysis ensemble clustering example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ensemble-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(clusterthat)
+library(ggplot2)
+library(dplyr)
+library(fda)
+theme_set(theme_minimal())
+```
+
+# An example of clustering with Functional Principle Components Analysis
+
+Functional Principle Components Analysis (FPCA) is a timeseries dimension reduction technique that decomposes multiple time series into a set of trends and loading factors on those trends for the various timeseries. Here we will demonstrate an example with the fda (functional data analysis) package.
+
+```{r fpca-fit}
+ggplot(haddock_ts) + geom_line(aes(
+  x = year, y = fbar,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+First we need to reshape our data for fitting:
+
+```{r}
+# convert to matrix
+df <- tapply(haddock_ts$fbar, 
+               list(year = haddock_ts$year, 
+                    model = haddock_ts$model_id),
+               identity)
+dplyr::glimpse(df)
+```
+
+The columns are our various models and the rows represent years.  In order to fit a functional principle component we need to first to conver the trends for each model into the functional space.  In this case we fill approximate the trends by moving into bspline space and reduce the dimension slightly.
+
+```{r}
+# set up basis functions for modelling
+yrange <- range(haddock_ts$year)
+nyears <- diff(yrange)
+yearbasis <- create.bspline.basis(yrange, nbasis = floor(nyears * .7))
+
+year <- as.numeric(dimnames(df)$year)
+fbarfd <- smooth.basis(year, 
+                       df,
+                       yearbasis, 
+                       fdnames=list("Year", "Model", "Fbar"))$fd
+plot(fbarfd, main = "Model components in reduced space")
+```
+
+
+the fpca is fitted as follows
+
+```{r}
+# fit pca
+pcaobj <- pca.fd(fbarfd, nharm = 4, fdPar(yearbasis, lambda=.1))
+varmxpcaobj <- varmx.pca.fd(pcaobj)
+
+#  plot harmonics
+par(mfrow=c(2,2))
+plot.pca.fd(pcaobj, cex.main=0.9)
+
+par(mfrow=c(1,1))
+plot(pcaobj$harmonics, main = "Components")
+```
+
+We will apply a varimax rotation to describe as much of the variation in the initial trend and then plot the underlying trends:
+
+```{r}
+varmxpcaobj <- varmx.pca.fd(pcaobj)
+
+#  plot harmonics
+par(mfrow=c(2,2))
+plot.pca.fd(varmxpcaobj, cex.main=0.9)
+```
+
+We can also get the loadings:
+
+```{r, warnings = FALSE}
+pcaobj$scores
+```
+
+We can now use the loadings in a clustering analysis.
+
+The following are our rotated loadings. We will reshape them into a data frame.
+
+```{r}
+fpca_loadings <- pcaobj$scores %>%
+  reshape2::melt() %>%
+  rename(time = Var1, model_id = Var2, loading = value) %>%
+  reshape2::dcast(time ~ model_id, value.var = "loading")
+```
+
+Now we can apply any of our clustering algorithms to these loadings:
+
+```{r}
+factoextra::fviz_nbclust(fpca_loadings, cluster::pam, method = "silhouette")
+
+m_cluster_fpca <- cluster::pam(fpca_loadings, k = 2L)
+plot_clusters(m_cluster_fpca,
+  data = fpca_loadings,
+  colour_vector = as.factor(m_cluster_fpca$clustering),
+  colour_label = "Cluster"
+)
+```
