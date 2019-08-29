@@ -61,7 +61,11 @@ plot_som_individual <- function(model, data, val, colour_vector = NULL,
   grid <- data.frame(model$grid$pts, Class = 1:nrow(model$grid$pts), Count = count)
 
   ## value unscaled
-  val_unscaled <- sapply(1:ncol(data), function(x) aggregate(as.numeric(data[, x]), by = list(model$unit.classif), FUN = mean, simplify = TRUE)[, 2])
+  val_unscaled <- sapply(1:ncol(data), function(x)
+    stats::aggregate(as.numeric(data[, x]),
+      by = list(model$unit.classif),
+      FUN = mean, simplify = TRUE
+    )[, 2])
   val_df <- data.frame(val_unscaled)
   colnames(val_df) <- paste0(colnames(data))
   val_df <- val_df %>% mutate(Class = seq(1, nrow(val_df)))
@@ -73,12 +77,17 @@ plot_som_individual <- function(model, data, val, colour_vector = NULL,
 
   p <- ggplot(input) +
     geom_hex(aes_string(x = "x", y = "y", fill = val),
-      color = "black", stat = "identity") +
-    ggplot2::coord_equal(xlim = c(min(input$x) - 0.5,
-      max(input$x) + 0.5), ylim = c(min(input$y) - 0.5, max(input$y) + 0.5)) +
+      color = "black", stat = "identity"
+    ) +
+    ggplot2::coord_equal(xlim = c(
+      min(input$x) - 0.5,
+      max(input$x) + 0.5
+    ), ylim = c(min(input$y) - 0.5, max(input$y) + 0.5)) +
     ggplot2::theme_void() +
-    ggrepel::geom_label_repel(aes_string(x = "x", y = "y",
-      label = "Model", color = "colour_vector"), seed = 1) +
+    ggrepel::geom_label_repel(aes_string(
+      x = "x", y = "y",
+      label = "Model", color = "colour_vector"
+    ), seed = 1) +
     ggplot2::scale_fill_viridis_c() +
     ggplot2::labs(colour = colour_label) +
     ggplot2::scale_color_brewer(palette = "Set2")
@@ -98,7 +107,7 @@ plot_som <- function(model, data, colour_vector = NULL,
   vals <- colnames(data)
   plot_info <- lapply(seq_len(length(vals)), function(x) {
     out <- plot_som_individual(model,
-      data = df, val = vals[x],
+      data = data, val = vals[x],
       colour_vector = colour_vector,
       colour_label = colour_label
     )

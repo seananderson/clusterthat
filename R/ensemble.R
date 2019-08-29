@@ -96,7 +96,7 @@ ensemble_2stage_weights <- function(cluster, weights = NULL) {
   .data <-
     .data %>%
       group_by(cluster) %>%
-      mutate(cluster_size = n(),
+      mutate(cluster_size = dplyr::n(),
              cluster_skill = mean(weights)) %>%
       ungroup()
 
