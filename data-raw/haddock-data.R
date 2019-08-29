@@ -13,7 +13,9 @@ haddock_ts <- tibble::as_tibble(haddock_ts)
 haddock_mod <- tibble::as_tibble(haddock_mod)
 
 haddock_ts <- reshape2::dcast(haddock_ts, year + model_id ~ what, value.var = "data") %>%
-  tibble::as_tibble(haddock_ts)
+  tibble::as_tibble(haddock_ts) %>%
+  dplyr::filter(ssb < 5e5) %>%
+  dplyr::arrange(model_id, year)
 
 usethis::use_data(haddock_mod, overwrite = TRUE)
 usethis::use_data(haddock_ts, overwrite = TRUE)
