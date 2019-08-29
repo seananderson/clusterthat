@@ -14,10 +14,13 @@
 #' @importFrom ggplot2 aes_string scale_colour_brewer ggplot geom_point
 #' geom_polygon labs
 #'
-# @examples
-# m <- kmeans(haddock_mod, 2)
-# plot_clusters(m, data = df, colour_vector = .d$fmodel,
-# colour_label = "F model")
+#' @examples
+#' df <- haddock_mod %>%
+#'   dplyr::select(fo_median, ffmsy_median, bbmsy_median) %>%
+#'   scale()
+#' kmeans(df, centers = 2L)
+#' plot_clusters(m, data = df, colour_vector = haddock_mod$fmodel,
+#'   colour_label = "F model")
 
 plot_clusters <- function(model, data = NULL, colour_vector = NULL,
   colour_label = "model", ...) {

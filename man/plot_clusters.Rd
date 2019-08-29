@@ -26,3 +26,11 @@ A ggplot2 object.
 \description{
 Plot clusters
 }
+\examples{
+df <- haddock_mod \%>\%
+  dplyr::select(fo_median, ffmsy_median, bbmsy_median) \%>\%
+  scale()
+kmeans(df, centers = 2L)
+plot_clusters(m, data = df, colour_vector = haddock_mod$fmodel,
+  colour_label = "F model")
+}
