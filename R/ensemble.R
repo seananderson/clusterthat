@@ -3,9 +3,7 @@
 #' Creates an ensemble of multiple input values based on provided
 #' weightss
 #'
-#' @param .data a code{data.frame} with columns holding the data to
-#'   ensemble over, cluster ids, and optional weights
-#' @param method one of: simple, cluster, 2stage (see details)
+#' @param value a vector holding the values to ensemble over
 #' @param cluster_id a vector of cluster ids defining the cluster
 #'   membership of the value
 #' @param weights margin parameters; vector of length 4 (see \code{\link[graphics]{par}})
@@ -16,7 +14,12 @@
 #'
 #' not yet!
 #'
+#'
+#' @importFrom stats weighted.mean
+#'
 #' @examples
+#'
+#' library(dplyr)
 #'
 #' # get data
 #' data(haddock_mod)
@@ -47,6 +50,11 @@
 #'     ens_cluster = ensemble_simple(ffmsy_median)
 #'   )
 #'
+#' @rdname ensemble
+#' @name ensembleMethods
+NULL
+
+#' @rdname ensemble
 #' @export
 ensemble_simple <- function(value, weights = NULL) {
   # get vlues to cluster over
@@ -60,21 +68,9 @@ ensemble_simple <- function(value, weights = NULL) {
   weighted.mean(value, weights)
 }
 
-ensemble_cluster <- function(value, cluster_id, weights = NULL) {
-
-  stop("not working yet")
-  .data <- data.frame(value = value, cluster_id = cluster_id)
-  .data$weights <- weights
-
-  .data %>%
-    group_by_(cluster_id) %>%
-    mutate(
-      ensemble = ensemble_simple(value, weights)
-    )
-
-}
-
-ensemble_2stage <- function(.data, value, cluster_id, weights) {
+#' @rdname ensemble
+#' @export
+ensemble_2stage <- function(value, cluster_id, weights = NULL) {
 
 }
 
