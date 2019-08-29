@@ -30,11 +30,24 @@ Plot clusters
 df <- haddock_mod \%>\%
   dplyr::select(fo_median, ffmsy_median, bbmsy_median) \%>\%
   scale()
-m <- kmeans(df, centers = 2L)
-plot_clusters(m, data = df, colour_vector = haddock_mod$fmodel,
-  colour_label = "F model")
 
-m <- cluster::pam(df, k = 2L)
-plot_clusters(m, data = df, colour_vector = haddock_mod$fmodel,
- colour_label = "F model")
+# Evaluate the number of clusters
+factoextra::fviz_nbclust(df, kmeans, method = "wss")
+factoextra::fviz_nbclust(df, kmeans, method = "silhouette")
+factoextra::fviz_nbclust(df, kmeans, method = "gap_stat")
+
+# Illustrate an example with 2 clusters:
+m <- kmeans(df, centers = 2L)
+
+plot_clusters(m,
+  data = df, colour_vector = haddock_mod$fmodel,
+  colour_label = "F model"
+)
+
+# Or with the more robust cluster::pam() algorithm:
+m <- cluster::pam(df, k = 4L)
+plot_clusters(m,
+  data = df, colour_vector = haddock_mod$fmodel,
+  colour_label = "F model"
+)
 }

@@ -22,7 +22,8 @@ Imports:
 Suggests:
     testthat,
     knitr,
-    rmarkdown
+    rmarkdown,
+    cluster
 RoxygenNote: 6.1.1
 Roxygen: list(markdown = TRUE)
 Depends: R (>= 3.2.0)
