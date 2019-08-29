@@ -1,0 +1,132 @@
+---
+title: "Simple example of clustering and ensembling for haddock"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 5,
+  fig.asp = 0.618034
+)
+```
+
+Here we will demonstrate some simple clustering with the Partitioning Around Mediods (PAM) algorithm. PAM is a more robust clustering method than kmeans. The `pam()` function is in the cluster package. We could do something nearly identical with the `kmeans()` function. See the examples in `clusterthat::plot_clusters()`.
+
+First, load our package:
+
+```{r setup}
+library(clusterthat)
+```
+
+We will work with the example haddock data. Let's add some features from the timeseries data into our model data set that we will use for the clustering.
+
+```{r, warning=FALSE}
+df <- add_features_flr(haddock_mod, haddock_ts) %>%
+  dplyr::filter(!is.na(log_ffmsy_median))
+dplyr::glimpse(df)
+```
+
+We will also want to scale the columns so that the features get equal weighting in the clustering.
+
+```{r}
+df_scaled <- dplyr::select(df, -model_id, -rmodel, -qmodel, -fmodel) %>%
+  scale()
+```
+
+We can evaluate the support from various numbers of clusters using the following techniques :
+
+```{r}
+factoextra::fviz_nbclust(df_scaled, cluster::pam, method = "silhouette",
+  k.max = 15)
+```
+
+We are looking for a number of clusters where the average silhouette width hits a maximum. The average silhouette width reaches a maximum at 4 clusters. We will work with that number here on in.
+
+```{r, warnings = FALSE}
+m_pam <- cluster::pam(df_scaled, k = 2)
+plot_clusters(m_pam, data = df_scaled, colour_vector = as.factor(m_pam$clustering),
+  colour_label = "Cluster")
+```
+
+The default dissimilarity metric is the euclidean distance (the root of the sum of squares of differences). An alternative is the "manhattan" dissimilarity metric which represents the sum of the absolute differences. The manhattan metric can be a bit more robust to outliers, but in most cases it should render nearly the same result as the euclidean metric.
+
+```{r, warnings = FALSE}
+factoextra::fviz_nbclust(df_scaled, cluster::pam, method = "silhouette",
+  metric = "manhattan", k.max = 15)
+
+m_pam_manhattan <- cluster::pam(df_scaled, k = 2, metric = "manhattan")
+
+plot_clusters(m_pam_manhattan, data = df_scaled,
+  colour_vector = as.factor(m_pam_manhattan$clustering),
+  colour_label = "Cluster")
+```
+
+Here they give nearly the same result although some models are placed into a different cluster. Let's continue with the slightly more robust manhattan metric.
+
+We can also use our `plot_clusters()` function to plot the clusters with more meaningful axes. We can work with any of the columns in our original data set.
+
+```{r}
+plot_clusters(m_pam_manhattan, data = df_scaled,
+  colour_vector = df$rmodel,
+  colour_label = "Recruitment model")
+```
+
+Or, with (log) B/Bmsy and F/Fmsy on the axes:
+
+```{r}
+plot_clusters(m_pam_manhattan, data = df_scaled,
+  colour_vector = df$fmodel,
+  choose.vars = c("log_bbmsy_median", "log_ffmsy_median"),
+  colour_label = "Recruitment model")
+```
+
+For the purposes of ensembling, we can grab the cluster IDs from:
+
+```{r}
+m_pam_manhattan$clustering
+```
+
+There are a number of ensembling options, all can be summarised by calculating different weights for each model.  There are currently xx weighting options, from a simple ensemble with equal weights, to an ensemble with weighting using a skill metric like cgcv, to the cluster based versions of these.  First you need to join the skill to the data used for clustering, then two weights that can be calculated
+
+
+```{r calculate_ensemble_weights}
+weights <-
+   df %>%
+   dplyr::left_join(haddock_mod, by = "model_id") %>%
+   dplyr::select(model_id, ffmsy_median, cgcv)
+weights$cluster <- m_pam_manhattan$clustering
+
+weights <-
+ weights %>%
+   dplyr::mutate(
+     ens_cluster_wts        = ensemble_2stage_weights(cluster),
+     ens_cluster_skill_wts  = ensemble_2stage_weights(cluster, cgcv)
+   )
+dplyr::glimpse(weights)
+```
+
+The ensembled value is then just weighted mean of the quantity of interest, this is build into the function `simple_ensemble`
+
+```{r simple_ensemble_cluster}
+F_ens <- ensemble_simple(weights$ffmsy_median, weights$ens_cluster_wts)
+
+plot(density(weights$ffmsy_median))
+abline(v = F_ens, col = "red")
+```
+
+In the case where we just want to calculate an enemble mean by cluster we can do:
+
+```{r calculate_ensembles}
+weights <-
+   df %>%
+   dplyr::left_join(haddock_mod) %>%
+   dplyr::select(model_id, ffmsy_median, cgcv)
+weights$cluster <- m_pam_manhattan$clustering
+
+ weights %>%
+   dplyr::group_by(cluster) %>%
+   dplyr::summarise(
+     F_ens = ensemble_simple(ffmsy_median)
+   )
+```
