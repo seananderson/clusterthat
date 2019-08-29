@@ -1,5 +1,5 @@
 ---
-title: "Fisheries ensemble clustering example"
+title: "Dynamic Factor Analysis ensemble clustering example"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{ensemble-example}

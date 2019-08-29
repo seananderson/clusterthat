@@ -1,0 +1,79 @@
+---
+title: "Simple example of clustering and ensembling"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{simple-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Here we will demonstrate some simple clustering with the Partitioning Around Mediods (PAM) algorithm. PAM is a more robust clustering method than kmeans. The `pam()` function is in the cluster package.
+
+First, load our package:
+
+```{r setup}
+library(clusterthat)
+library(dplyr)
+```
+
+We will work with the example haddock data.
+
+Let's add some features from the timeseries data into our model data set that we will use for the clustering.
+
+```{r}
+df <- add_features_flr(haddock_mod, haddock_ts)
+dplyr::glimpse(df)
+```
+
+We will also want to scale the columns so that the features get equal weighting in the clustering.
+
+```{r}
+df <- scale(df)
+```
+
+We can evaluate the support from various numbers of clusters using the following techniques :
+
+```{r}
+factoextra::fviz_nbclust(df, cluster::pam, method = "silhouette", metric = "manhattan")
+# factoextra::fviz_nbclust(df, cluster::pam, method = "gap_stat")
+```
+
+We are looking for a number of clusters where the average silhouette width hits a maximum. Although the average silhouette width continues to climb, it reaches its near highest point by 2 clusters. We will work with two clusters here on in.
+
+```{r}
+m_pam <- cluster::pam(df, k = 2)
+plot_clusters(m_pam, data = df, colour_vector = as.factor(m_pam$clustering),
+  colour_label = "Cluster")
+```
+
+The default dissimilarity metric is the euclidean distance (the root of the sum of squares of differences). An alternative is the "manhattan" dissimilarity metric which represents the some of the absolute differences. The manhattan metric can be a bit more robust to outliers, but in most cases it should render nearly the same result as the euclidean metric.
+
+```{r}
+m_pam_manhattan <- cluster::pam(df, k = 2, metric = "manhattan")
+plot_clusters(m_pam_manhattan, data = df,
+  colour_vector = as.factor(m_pam_manhattan$clustering),
+  colour_label = "Cluster")
+```
+
+Here they give nearly the same result although some models are placed into a different cluster. Let's continue with the slightly more robust manhattan metric.
+
+We can also use our `plot_clusters()` function to plot the clusters with more meaningful axes. We can work with any of the columns in our original data set.
+
+```{r}
+# plot_clusters(m_pam_manhattan, data = df,
+#   colour_vector = haddock_mod$rmodel,
+#   colour_label = "Recruitment model")
+```
+
+For the purposes of ensembling, we can grab the cluster IDs from:
+
+```{r}
+m_pam_manhattan$clustering
+```
