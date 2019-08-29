@@ -48,7 +48,7 @@ plot_clusters(m,
   colour_label = "F model"
 )
 
-# calculate weighting?
+# calculate weighting
 weights <-
   haddock_mod \%>\%
   dplyr::select(model_id, ffmsy_median, cgcv)
@@ -57,23 +57,23 @@ weights$cluster <- m$cluster
 
 # do a simple ensemble - no weighting
 weights \%>\%
-  mutate(
+  dplyr::mutate(
     ens_simple = ensemble_simple(ffmsy_median)
   )
 
 # do a simple cluster ensemble - no weighting
 weights \%>\%
-  group_by(cluster) \%>\%
-  mutate(
+  dplyr::group_by(cluster) \%>\%
+  dplyr::mutate(
     ens_cluster = ensemble_simple(ffmsy_median)
   )
 
 # use skill level from cgcv
 weights \%>\%
-  mutate(
+  dplyr::mutate(
     ens_cluster_wts  = ensemble_2stage_weights(cluster, cgcv)
   ) \%>\%
-  mutate(
+  dplyr::mutate(
     ens_cluster = ensemble_simple(ffmsy_median, ens_cluster_wts)
   )
 

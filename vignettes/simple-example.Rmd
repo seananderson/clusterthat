@@ -92,3 +92,51 @@ For the purposes of ensembling, we can grab the cluster IDs from:
 ```{r}
 m_pam_manhattan$clustering
 ```
+
+
+There are a number of ensembleing options, all can be summarised by calculating different weights for each model.  There are currently xx weighting options, from a simple ensemble with equal weights, to an ensemble with weighting using a skill metric like cgcv, to the cluster based versions of these.  First you need to join the skill to the data used for clustering, then two weights that can be calculated 
+
+
+```{r calculate_ensemble_weights}
+weights <-
+   df %>%
+   dplyr::left_join(haddock_mod, by = "model_id") %>%
+   dplyr::select(model_id, ffmsy_median, cgcv)
+weights$cluster <- m_pam_manhattan$clustering
+
+weights <-
+ weights %>%
+   dplyr::mutate(
+     ens_cluster_wts        = ensemble_2stage_weights(cluster),
+     ens_cluster_skill_wts  = ensemble_2stage_weights(cluster, cgcv)
+   ) 
+dplyr::glimpse(weights)
+```
+
+
+the ensembled value is then just weighted mean of the quantity of interest, this is build into the function `simple_ensemble`
+
+```{r simple_ensemble_cluster}
+F_ens <- ensemble_simple(weights$ffmsy_median, weights$ens_cluster_wts)
+
+plot(density(weights$ffmsy_median))
+abline(v = F_ens, col = "red")
+```
+
+
+In the case where we just want to calculate an enemble mean by cluster we can do:
+
+```{r calculate_ensembles}
+weights <-
+   df %>%
+   dplyr::left_join(haddock_mod) %>%
+   dplyr::select(model_id, ffmsy_median, cgcv)
+weights$cluster <- m_pam_manhattan$clustering
+
+ weights %>%
+   dplyr::group_by(cluster) %>%
+   dplyr::summarise(
+     F_ens = ensemble_simple(ffmsy_median)
+   )
+```
+

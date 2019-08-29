@@ -15,8 +15,8 @@ fits2data_ts <- function(fits) {
           x <- fit$stk + fit$fit
           rbind(cbind(what = "ssb", FLCore::as.data.frame(ssb(x))),
                 cbind(what = "fbar", FLCore::as.data.frame(fbar(x)))) %>%
-            select(year, data, what) %>%
-            mutate(model_id = fit$model$model_id)
+            dplyr::select(year, data, what) %>%
+            dplyr::mutate(model_id = fit$model$model_id)
         })
     )
   rownames(df) <- NULL

@@ -9,6 +9,7 @@
 #'
 #' @return A data.frame object
 #' @export
+#' @importFrom stats median sd
 fits2data_mod <- function(fits, fo, ffmsy, bbmsy) {
   df <-
     do.call(rbind,
@@ -35,8 +36,8 @@ fits2data_mod <- function(fits, fo, ffmsy, bbmsy) {
                ffmsy_cv     = apply(ffmsy, 2, cv),
                bbmsy_median = apply(bbmsy, 2, median),
                bbmsy_cv     = apply(bbmsy, 2, cv)) %>%
-    left_join(df) %>%
-    left_join(wts)
+    dplyr::left_join(df) %>%
+    dplyr::left_join(wts)
 
   names(df) <- tolower(names(df))
   df <- dplyr::filter(df, !is.na(bbmsy_median))

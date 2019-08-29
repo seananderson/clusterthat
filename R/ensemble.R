@@ -32,7 +32,7 @@
 #'   colour_label = "F model"
 #' )
 #'
-#' # calculate weighting?
+#' # calculate weighting
 #' weights <-
 #'   haddock_mod %>%
 #'   dplyr::select(model_id, ffmsy_median, cgcv)
@@ -41,23 +41,23 @@
 #'
 #' # do a simple ensemble - no weighting
 #' weights %>%
-#'   mutate(
+#'   dplyr::mutate(
 #'     ens_simple = ensemble_simple(ffmsy_median)
 #'   )
 #'
 #' # do a simple cluster ensemble - no weighting
 #' weights %>%
-#'   group_by(cluster) %>%
-#'   mutate(
+#'   dplyr::group_by(cluster) %>%
+#'   dplyr::mutate(
 #'     ens_cluster = ensemble_simple(ffmsy_median)
 #'   )
 #'
 #' # use skill level from cgcv
 #' weights %>%
-#'   mutate(
+#'   dplyr::mutate(
 #'     ens_cluster_wts  = ensemble_2stage_weights(cluster, cgcv)
 #'   ) %>%
-#'   mutate(
+#'   dplyr::mutate(
 #'     ens_cluster = ensemble_simple(ffmsy_median, ens_cluster_wts)
 #'   )
 #'
@@ -96,15 +96,15 @@ ensemble_2stage_weights <- function(cluster, weights = NULL) {
   # get all the bits of info we need
   .data <-
     .data %>%
-      group_by(cluster) %>%
-      mutate(cluster_size = dplyr::n(),
-             cluster_skill = mean(weights)) %>%
-      ungroup()
+      dplyr::group_by(cluster) %>%
+      dplyr::mutate(cluster_size = dplyr::n(),
+                    cluster_skill = mean(weights)) %>%
+      dplyr::ungroup()
 
   # compute 2-stage weights
   .data <-
     .data %>%
-    mutate(cluster_weight = cluster_skill / (cluster_size * nclusters)  )
+    dplyr::mutate(cluster_weight = cluster_skill / (cluster_size * nclusters)  )
 
   # return weights
   .data$cluster_weight
