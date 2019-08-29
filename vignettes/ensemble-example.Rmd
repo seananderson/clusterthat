@@ -16,4 +16,86 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(clusterthat)
+library(ggplot2)
+library(dplyr)
+library(bayesdfa)
+theme_set(theme_minimal())
+```
+
+# An example of clustering with Bayesian Dynamic Factor Analysis
+
+Dynamic Factor Analysis (DFA) is a timeseries dimension reduction technique that estimates a shared set of trends and loading factors on those trends for the various timeseries. bayesdfa fits Bayesian DFA via a model written in Stan. Here we will demonstrate an example with the bayesdfa package.
+
+<https://CRAN.R-project.org/package=bayesdfa>
+<http://rjournal.github.io/archive/2019/RJ-2019-007/index.html>
+
+```{r dfa-fit}
+ggplot(haddock_ts) + geom_line(aes(
+  x = year, y = fbar,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+First we need to reshape our data for fitting:
+
+```{r}
+df <- haddock_ts %>%
+  reshape2::dcast(year ~ model_id, value.var = "fbar") %>%
+  dplyr::select(-year)
+head(df)
+```
+
+The columns are our various models and the rows represent years.
+
+We will fit a model with 2 underlying trends. We will only use one chain so that this runs quickly but you will likely want to use at least 4 and probably more iterations.
+
+```{r, warning=FALSE, results="hide"}
+m2 <- fit_dfa(y = df, num_trends = 2, chains = 1, iter = 400, data_shape = "long")
+```
+
+We will apply a varimax rotation, as is commonly done with, for example, Principal Component Analysis and then plot the underlying trends:
+
+```{r}
+rot2 <- rotate_trends(m2)
+plot_trends(rot2)
+```
+
+We can also plot the loadings:
+
+```{r, warnings = FALSE}
+g <- plot_loadings(rot2)
+
+# remove colour if desired:
+g$layers[[1]] <- NULL
+g + geom_violin(colour = NA, fill = "grey30") +
+  coord_flip(ylim = c(-1, 1.5)) # demonstrating how to limit the axis
+```
+
+We can now use the loadings in a clustering analysis.
+
+The following are our rotated loadings. We will reshape them into a data frame.
+
+```{r}
+head(rot2$Z_rot_mean)
+
+dfa_loadings <- rot2$Z_rot_mean %>%
+  reshape2::melt() %>%
+  rename(time = Var1, model_id = Var2, loading = value) %>%
+  reshape2::dcast(time ~ model_id, value.var = "loading")
+```
+
+Now we can apply any of our clustering algorithms to these loadings:
+
+```{r}
+factoextra::fviz_nbclust(dfa_loadings, cluster::pam, method = "wss")
+factoextra::fviz_nbclust(dfa_loadings, cluster::pam, method = "silhouette")
+factoextra::fviz_nbclust(dfa_loadings, cluster::pam, method = "gap_stat")
+
+m_cluster_dfa <- cluster::pam(dfa_loadings, k = 2L)
+plot_clusters(m_cluster_dfa,
+  data = dfa_loadings,
+  colour_vector = as.factor(m_cluster_dfa$clustering),
+  colour_label = "Cluster"
+)
 ```
