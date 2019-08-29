@@ -299,7 +299,7 @@ Hierarchical clustering:
 
 ```{r}
 factoextra::fviz_nbclust(df, cluster::pam, method = "silhouette",
-  k.max = 6)
+  k.max = 4)
 ```
 
 ```{r cluster_sim, fig.height = 4, fig.width = 6}
