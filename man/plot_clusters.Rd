@@ -33,4 +33,8 @@ df <- haddock_mod \%>\%
 m <- kmeans(df, centers = 2L)
 plot_clusters(m, data = df, colour_vector = haddock_mod$fmodel,
   colour_label = "F model")
+
+m <- cluster::pam(df, k = 2L)
+plot_clusters(m, data = df, colour_vector = haddock_mod$fmodel,
+ colour_label = "F model")
 }

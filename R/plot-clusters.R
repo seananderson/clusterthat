@@ -19,11 +19,22 @@
 #'   dplyr::select(fo_median, ffmsy_median, bbmsy_median) %>%
 #'   scale()
 #' m <- kmeans(df, centers = 2L)
-#' plot_clusters(m, data = df, colour_vector = haddock_mod$fmodel,
-#'   colour_label = "F model")
-
+#' plot_clusters(m,
+#'   data = df, colour_vector = haddock_mod$fmodel,
+#'   colour_label = "F model"
+#' )
+#'
+#' m <- cluster::pam(df, k = 2L)
+#' plot_clusters(m,
+#'   data = df, colour_vector = haddock_mod$fmodel,
+#'   colour_label = "F model"
+#' )
 plot_clusters <- function(model, data = NULL, colour_vector = NULL,
-  colour_label = "model", ...) {
+                          colour_label = "model", ...) {
+  if (!class(model)[[1]] %in% c("pam", "kmeans")) {
+    stop("Model must be of class pam or kmeans.")
+  }
+
   g <- factoextra::fviz_cluster(model,
     data = data,
     ellipse.type = "convex",
@@ -37,6 +48,13 @@ plot_clusters <- function(model, data = NULL, colour_vector = NULL,
     gdat[[1]] <- data.frame(gdat[[1]], colour_vector = 1)
   }
 
+  if (identical(class(model)[[1]], "pam")) {
+    label_data <- gdat[[3]]
+  }
+  if (identical(class(model)[[1]], "kmeans")) {
+    label_data <- gdat[[4]]
+  }
+
   gg <- ggplot(gdat[[1]], aes_string("x", "y")) +
     geom_point(aes_string(colour = "colour_vector"), size = 2.5) +
     geom_polygon(
@@ -44,7 +62,10 @@ plot_clusters <- function(model, data = NULL, colour_vector = NULL,
       fill = NA, colour = "grey50"
     ) +
     ggplot2::theme_minimal() +
-    ggrepel::geom_text_repel(data = gdat[[4]], aes_string("x", "y", label = "label")) +
+    ggrepel::geom_text_repel(
+      data = label_data,
+      aes_string("x", "y", label = "label")
+    ) +
     labs(x = g$labels$x, y = g$labels$y, colour = colour_label) +
     scale_colour_brewer(palette = "Set2")
 
