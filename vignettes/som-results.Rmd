@@ -1,0 +1,291 @@
+---
+title: "Fisheries ensemble self-organized map example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{som-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(clusterthat)
+library(ggplot2)
+library(dplyr)
+library(kohonen)
+theme_set(theme_minimal())
+```
+
+# Clustering with self-organising maps for three case studies
+
+Self-organising maps (SOM) are an unsupervised categorisation technique to better visualise high-dimensional datasets in lower dimensions, placing similar objects next to each other onto a constant grid. 
+
+The SOM algorithm involves randomly assigning a value to each grid cell. The algorithm then considers observations one at a time. For each observation, it finds the grid cell with the nearest value according to the distance metric and changes the grid cell value by taking a weighted mean of the grid cell value and the proposed value. The weighting corresponds to the learning rate. The algorithm also adjusts nearby grid cells, and over the iterations, reduces the number of nearby grid cells until it's only considering each individual grid cell. With more iterations, the learning rate decreases. This approach results in nearby grid cells being more similar to each other than further away grid cells in the final map.
+
+The R package `kohonen` includes functions to implement the SOMs. Here we demonstrate an example with the `kohonen` package.
+
+<https://CRAN.R-project.org/package=kohonen>
+<https://www.jstatsoft.org/article/view/v021i05>
+
+# Georges Bank haddock
+
+Here we explore SOMs for 44 stock assessment model runs for Georges Bank haddock, exploring the "fishing opportunity" (fo_median), estimated fishing mortality rate in the last year of the model relative to the fishing mortality rate that would produce MSY (ffmsy_median) and the estimated biomass in the last year of the model relative to the biomass that would lead to MSY (bbmsy_median).
+
+```{r data1, fig.height = 3, fig.width = 4}
+ggplot(haddock_mod) + geom_point(aes(
+  x = bbmsy_median, y = ffmsy_median,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+```{r data2, fig.height = 3, fig.width = 4}
+ggplot(haddock_mod) + geom_point(aes(
+  x = fo_median, y = ffmsy_median,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+Reshape data for fitting:
+
+```{r}
+df <- haddock_mod %>%
+      dplyr::select(fo_median, ffmsy_median, bbmsy_median) %>%
+      scale()
+head(df)
+```
+
+The rows are our various models and the columns represent different parameters of interest.
+
+SOM training grid:
+
+```{r, warning=FALSE, results="hide"}
+som_grid <- kohonen::somgrid(xdim = 3, ydim = 2, topo = "hexagonal")
+```
+
+Train the SOM:
+
+```{r}
+som_model <- kohonen::som(df,
+   grid = som_grid,
+   rlen = 500,
+   alpha = c(0.05, 0.01),
+   keep.data = TRUE
+ )
+```
+
+Check convergence: 
+
+```{r}
+plot(som_model, type = "changes")
+```
+
+
+SOM visualisation:
+
+```{r multi, fig.height = 9, fig.width = 6}
+clusterthat::plot_som(som_model,
+   data = df, colour_vector = haddock_mod$fmodel,
+   colour_label = "F model",
+   nrow = 3
+ )
+```
+
+The `kohonen` R package 'codes' figure:
+
+```{r codes, fight.height=5, fig.width = 6}
+plot(som_model, type = "codes", shape = "straight")
+```
+
+Hierarchical clustering:
+
+```{r}
+factoextra::fviz_nbclust(df, cluster::pam, method = "silhouette",
+  k.max = 6)
+```
+
+In this case, while two clusters have the highest silhouette width:
+
+```{r cluster, fig.height = 4, fig.width = 6}
+## use hierarchical clustering to cluster the codebook vectors
+som_cluster <- cutree(hclust(dist(som_model$codes[[1]])), 2)
+# plot these results:
+colours <- viridisLite::viridis(2)
+plot(som_model, type = "mapping", main = "Clusters", bgcol = colours[som_cluster], shape = "straight")
+add.cluster.boundaries(som_model, som_cluster)
+```
+
+# Icelandic cod
+
+Here we explore SOMs for 44 stock assessment model runs for Georges Bank haddock, exploring the "fishing opportunity" (fo_median), estimated fishing mortality rate in the last year of the model relative to the fishing mortality rate that would produce MSY (ffmsy_median) and the estimated biomass in the last year of the model relative to the biomass that would lead to MSY (bbmsy_median).
+
+```{r data1_cod, fig.height = 3, fig.width = 4}
+ggplot(cod_mod) + geom_point(aes(
+  x = bbmsy_median, y = ffmsy_median,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+```{r data2_cod, fig.height = 3, fig.width = 4}
+ggplot(cod_mod) + geom_point(aes(
+  x = fo_median, y = ffmsy_median,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+Reshape data for fitting:
+
+```{r}
+df <- cod_mod %>%
+      dplyr::select(fo_median, ffmsy_median, bbmsy_median) %>%
+      scale()
+head(df)
+```
+
+The rows are our various models and the columns represent different parameters of interest.
+
+SOM training grid:
+
+```{r, warning=FALSE, results="hide"}
+som_grid <- kohonen::somgrid(xdim = 3, ydim = 2, topo = "hexagonal")
+```
+
+Train the SOM:
+
+```{r}
+som_model <- kohonen::som(df,
+   grid = som_grid,
+   rlen = 500,
+   alpha = c(0.05, 0.01),
+   keep.data = TRUE
+ )
+```
+
+Check convergence: 
+
+```{r}
+plot(som_model, type = "changes")
+```
+
+
+SOM visualisation:
+
+```{r multi_cod, fig.height = 9, fig.width = 6}
+clusterthat::plot_som(som_model,
+   data = df, colour_vector = cod_mod$fmodel,
+   colour_label = "F model",
+   nrow = 3
+ )
+```
+
+The `kohonen` R package 'codes' figure:
+
+```{r codes_cod, fight.height=5, fig.width = 6}
+plot(som_model, type = "codes", shape = "straight")
+```
+
+Hierarchical clustering:
+
+```{r}
+factoextra::fviz_nbclust(df, cluster::pam, method = "silhouette",
+  k.max = 6)
+```
+
+In this case, while two clusters have the highest silhoutte width:
+
+```{r cluster_cod, fig.height = 4, fig.width = 6}
+## use hierarchical clustering to cluster the codebook vectors
+som_cluster <- cutree(hclust(dist(som_model$codes[[1]])), 2)
+# plot these results:
+colours <- viridisLite::viridis(2)
+plot(som_model, type = "mapping", main = "Clusters", bgcol = colours[som_cluster], shape = "straight")
+add.cluster.boundaries(som_model, som_cluster)
+```
+
+# simg3
+
+Here we explore SOMs for 44 stock assessment model runs for Georges Bank haddock, exploring the "fishing opportunity" (fo_median), estimated fishing mortality rate in the last year of the model relative to the fishing mortality rate that would produce MSY (ffmsy_median) and the estimated biomass in the last year of the model relative to the biomass that would lead to MSY (bbmsy_median).
+
+```{r data1_g3, fig.height = 3, fig.width = 4}
+ggplot(simg3_mod) + geom_point(aes(
+  x = bbmsy_median, y = ffmsy_median,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+```{r data2_g3, fig.height = 3, fig.width = 4}
+ggplot(simg3_mod) + geom_point(aes(
+  x = fo_median, y = ffmsy_median,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+Reshape data for fitting:
+
+```{r}
+df <- simg3_mod %>%
+      dplyr::select(fo_median, ffmsy_median, bbmsy_median) %>%
+      scale()
+head(df)
+```
+
+The rows are our various models and the columns represent different parameters of interest.
+
+SOM training grid:
+
+```{r, warning=FALSE, results="hide"}
+som_grid <- kohonen::somgrid(xdim = 2, ydim = 2, topo = "hexagonal")
+```
+
+Train the SOM. The simulation required increasing the number of iterations to achieve convergence. 
+
+```{r}
+som_model <- kohonen::som(df,
+   grid = som_grid,
+   rlen = 10000,
+   alpha = c(0.05, 0.01),
+   keep.data = TRUE
+ )
+```
+
+Check convergence: 
+
+```{r}
+plot(som_model, type = "changes")
+```
+
+
+SOM visualisation:
+
+```{r multi_g3, fig.height = 9, fig.width = 6}
+clusterthat::plot_som(som_model,
+   data = df, colour_vector = simg3_mod$fmodel,
+   colour_label = "F model",
+   nrow = 3
+ )
+```
+
+The `kohonen` R package 'codes' figure:
+
+```{r codes_g3, fight.height=5, fig.width = 6}
+plot(som_model, type = "codes", shape = "straight")
+```
+
+Hierarchical clustering:
+
+```{r}
+factoextra::fviz_nbclust(df, cluster::pam, method = "silhouette",
+  k.max = 6)
+```
+
