@@ -4,7 +4,7 @@
 #' weightss
 #'
 #' @param value a vector holding the values to ensemble over
-#' @param cluster_id a vector of cluster ids defining the cluster
+#' @param cluster a vector of cluster ids defining the cluster
 #'   membership of the value
 #' @param weights margin parameters; vector of length 4 (see \code{\link[graphics]{par}})
 #'
@@ -14,8 +14,6 @@
 #'
 #' not yet!
 #'
-#'
-#' @importFrom stats weighted.mean
 #'
 #' @examples
 #'
@@ -50,12 +48,25 @@
 #'     ens_cluster = ensemble_simple(ffmsy_median)
 #'   )
 #'
+#'
+#' # fake skill measure for now
+#' df$cgcv <- runif(nrow(df),0,1)
+#'
+#' df %>%
+#'   mutate(
+#'     ens_cluster_wts  = ensemble_2stage_weights(cluster, cgcv)
+#'   ) %>%
+#'   mutate(
+#'     ens_cluster = ensemble_simple(ffmsy_median, ens_cluster_wts)
+#'   )
+#'
 #' @rdname ensemble
 #' @name ensembleMethods
 NULL
 
 #' @rdname ensemble
 #' @export
+#' @importFrom stats weighted.mean
 ensemble_simple <- function(value, weights = NULL) {
   # get vlues to cluster over
 
@@ -68,9 +79,39 @@ ensemble_simple <- function(value, weights = NULL) {
   weighted.mean(value, weights)
 }
 
+
 #' @rdname ensemble
 #' @export
-ensemble_2stage <- function(value, cluster_id, weights = NULL) {
+#' @importFrom dplyr group_by mutate ungroup
+ensemble_2stage_weights <- function(cluster, weights = NULL) {
 
+  # create a df
+  .data <- data.frame(cluster = factor(cluster))
+  .data$weights <- if(is.null(weights)) 1 else weights
+
+  # total number of clusters
+  .data$nclusters <- length(unique(cluster))
+
+  # get all the bits of info we need
+  .data <-
+    .data %>%
+      group_by(cluster) %>%
+      mutate(cluster_size = n(),
+             cluster_skill = mean(weights)) %>%
+      ungroup()
+
+  # compute 2-stage weights
+  .data <-
+    .data %>%
+    mutate(cluster_weight = cluster_skill / (cluster_size * nclusters)  )
+
+  # return weights
+  .data$cluster_weight
 }
 
+#' @rdname ensemble
+#' @export
+ensemble_2stage <- function(value, cluster, weights = NULL) {
+  wts <- ensemble_2stage_weights(cluster, weights)
+  ensemble_simple(value, wts)
+}

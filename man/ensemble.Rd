@@ -3,19 +3,22 @@
 \name{ensembleMethods}
 \alias{ensembleMethods}
 \alias{ensemble_simple}
+\alias{ensemble_2stage_weights}
 \alias{ensemble_2stage}
 \title{Ensemble multiple input values}
 \usage{
 ensemble_simple(value, weights = NULL)
 
-ensemble_2stage(value, cluster_id, weights = NULL)
+ensemble_2stage_weights(cluster, weights = NULL)
+
+ensemble_2stage(value, cluster, weights = NULL)
 }
 \arguments{
 \item{value}{a vector holding the values to ensemble over}
 
 \item{weights}{margin parameters; vector of length 4 (see \code{\link[graphics]{par}})}
 
-\item{cluster_id}{a vector of cluster ids defining the cluster
+\item{cluster}{a vector of cluster ids defining the cluster
 membership of the value}
 }
 \value{
@@ -59,6 +62,18 @@ df \%>\%
   group_by(cluster) \%>\%
   mutate(
     ens_cluster = ensemble_simple(ffmsy_median)
+  )
+
+
+# fake skill measure for now
+df$cgcv <- runif(nrow(df),0,1)
+
+df \%>\%
+  mutate(
+    ens_cluster_wts  = ensemble_2stage_weights(cluster, cgcv)
+  ) \%>\%
+  mutate(
+    ens_cluster = ensemble_simple(ffmsy_median, ens_cluster_wts)
   )
 
 }
