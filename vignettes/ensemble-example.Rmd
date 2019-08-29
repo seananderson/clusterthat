@@ -48,13 +48,13 @@ head(df)
 
 The columns are our various models and the rows represent years.
 
-We will fit a model with 2 underlying trends. We will only use one chain so that this runs quickly but you will likely want to use at least 4 and probably more iterations.
+We will fit a model with 1 underlying trend for speed. We will only use one chain so that this runs quickly but you will likely want to use at least 4 and probably 1000 or greater iterations.
 
 ```{r, warning=FALSE, results="hide"}
-m2 <- fit_dfa(y = df, num_trends = 2, chains = 1, iter = 400, data_shape = "long")
+m2 <- fit_dfa(y = df, num_trends = 1, chains = 1, iter = 300, data_shape = "long")
 ```
 
-We will apply a varimax rotation, as is commonly done with, for example, Principal Component Analysis and then plot the underlying trends:
+We will apply a varimax rotation to describe as much of the variation in the initial trend and then plot the underlying trends:
 
 ```{r}
 rot2 <- rotate_trends(m2)

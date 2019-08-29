@@ -18,7 +18,10 @@ Imports:
     stats,
     ggrepel,
     factoextra,
-    magrittr
+    magrittr,
+    tidyr,
+    rlang,
+    purrr
 Suggests:
     testthat,
     knitr,
