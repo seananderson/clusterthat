@@ -1,21 +1,10 @@
-haddock_mod <- read.csv("data-raw/haddock_clustering_mod.csv", stringsAsFactors = FALSE)
-haddock_ts <- read.csv("data-raw/haddock_clustering_ts.csv", stringsAsFactors = FALSE)
 
-haddock_mod <- dplyr::select(haddock_mod, -X)
-names(haddock_mod) <- tolower(names(haddock_mod))
-haddock_mod <- dplyr::filter(haddock_mod, !is.na(bbmsy_median))
+library(FLCore)
+library(FLa4a)
+load("data-raw/fits.rdata")
 
-haddock_ts <- dplyr::select(haddock_ts, -X)
-names(haddock_ts) <- tolower(names(haddock_ts))
-haddock_ts <- dplyr::filter(haddock_ts, !is.na(data))
-
-haddock_ts <- tibble::as_tibble(haddock_ts)
-haddock_mod <- tibble::as_tibble(haddock_mod)
-
-haddock_ts <- reshape2::dcast(haddock_ts, year + model_id ~ what, value.var = "data") %>%
-  tibble::as_tibble(haddock_ts) %>%
-  dplyr::filter(ssb < 5e5) %>%
-  dplyr::arrange(model_id, year)
+haddock_ts <- clusterthat::fits2data_ts(fits)
+haddock_mod <- clusterthat::fits2data_mod(fits, fo, ffmsy, bbmsy)
 
 usethis::use_data(haddock_mod, overwrite = TRUE)
 usethis::use_data(haddock_ts, overwrite = TRUE)

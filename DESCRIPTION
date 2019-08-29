@@ -21,7 +21,8 @@ Imports:
     magrittr,
     tidyr,
     rlang,
-    purrr
+    purrr,
+    FLCore
 Suggests:
     testthat,
     knitr,
