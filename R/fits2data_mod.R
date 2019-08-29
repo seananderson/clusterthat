@@ -10,7 +10,7 @@
 #' @return A data.frame object
 #' @export
 #' @importFrom stats median sd
-fits2data_mod <- function(fits, fo, ffmsy, bbmsy) {
+fits2data_mod <- function(fits, fo, ffmsy, bbmsy, wts) {
   df <-
     do.call(rbind,
             lapply(fits, function(fit) {

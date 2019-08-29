@@ -12,7 +12,7 @@ library(FLa4a)
 load("data-raw/fits_haddock.rdata")
 
 haddock_ts <- clusterthat::fits2data_ts(fits2)
-haddock_mod <- clusterthat::fits2data_mod(fits2, fo, ffmsy, bbmsy)
+haddock_mod <- clusterthat::fits2data_mod(fits2, fo, ffmsy, bbmsy, wts)
 
 usethis::use_data(haddock_mod, overwrite = TRUE)
 usethis::use_data(haddock_ts, overwrite = TRUE)
