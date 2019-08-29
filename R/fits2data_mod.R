@@ -26,15 +26,15 @@ fits2data_mod <- function(fits, fo, ffmsy, bbmsy) {
   rownames(df) <- NULL
 
 
-  cv <- function(x) sd(x) / mean(x)
+  cv <- function(x) stats::sd(x) / stats::mean(x)
 
   df <-
     data.frame(model_id = 1:ncol(fo),
-               fo_median    = apply(fo, 2, median),
+               fo_median    = apply(fo, 2, stats::median),
                fo_cv        = apply(fo, 2, cv),
-               ffmsy_median = apply(ffmsy, 2, median),
+               ffmsy_median = apply(ffmsy, 2, stats::median),
                ffmsy_cv     = apply(ffmsy, 2, cv),
-               bbmsy_median = apply(bbmsy, 2, median),
+               bbmsy_median = apply(bbmsy, 2, stats::median),
                bbmsy_cv     = apply(bbmsy, 2, cv)) %>%
     dplyr::left_join(df) %>%
     dplyr::left_join(wts)
