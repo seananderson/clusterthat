@@ -44,6 +44,14 @@ plot_clusters(m,
   colour_label = "F model"
 )
 
+# The default is to plot the two first principal components as x and y.
+# Instead we can pick specific axes to show:
+plot_clusters(m,
+  data = df, colour_vector = haddock_mod$fmodel,
+  colour_label = "F model",
+  choose.vars = c("bbmsy_median", "ffmsy_median")
+)
+
 # Or with the more robust cluster::pam() algorithm:
 m <- cluster::pam(df, k = 4L)
 plot_clusters(m,
