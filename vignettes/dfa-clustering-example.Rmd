@@ -88,9 +88,9 @@ dfa_loadings <- rot2$Z_rot_mean %>%
 Now we can apply any of our clustering algorithms to these loadings:
 
 ```{r}
-factoextra::fviz_nbclust(dfa_loadings, cluster::pam, method = "wss")
+# factoextra::fviz_nbclust(dfa_loadings, cluster::pam, method = "wss")
 factoextra::fviz_nbclust(dfa_loadings, cluster::pam, method = "silhouette")
-factoextra::fviz_nbclust(dfa_loadings, cluster::pam, method = "gap_stat")
+# factoextra::fviz_nbclust(dfa_loadings, cluster::pam, method = "gap_stat")
 
 m_cluster_dfa <- cluster::pam(dfa_loadings, k = 2L)
 plot_clusters(m_cluster_dfa,

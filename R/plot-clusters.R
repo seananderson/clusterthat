@@ -84,7 +84,7 @@ plot_clusters <- function(model, data = NULL, colour_vector = NULL,
       aes_string("x", "y", label = "label")
     ) +
     labs(x = g$labels$x, y = g$labels$y, colour = colour_label) +
-    scale_colour_brewer(palette = "Set2")
+    ggplot2::scale_color_viridis_d()
 
   gg
 }
