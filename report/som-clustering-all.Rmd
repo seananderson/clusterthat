@@ -211,20 +211,33 @@ plot(som_model, type = "mapping", main = "Clusters", bgcol = colours[som_cluster
 add.cluster.boundaries(som_model, som_cluster)
 ```
 
-# simg3
+# Simulation
 
 Here we explore SOMs for 44 stock assessment model runs for Georges Bank haddock, exploring the "fishing opportunity" (fo_median), estimated fishing mortality rate in the last year of the model relative to the fishing mortality rate that would produce MSY (ffmsy_median) and the estimated biomass in the last year of the model relative to the biomass that would lead to MSY (bbmsy_median).
 
-```{r data1_g3, fig.height = 3, fig.width = 4}
-ggplot(simg3_mod) + geom_point(aes(
+```{r, warning=FALSE}
+sim_ts <-
+  rbind(
+    simg3_ts,
+    sims3_ts %>% mutate(model_id = model_id + max(model_id))
+  )
+sim_mod <-
+  rbind(
+    simg3_mod,
+    sims3_mod %>% mutate(model_id = model_id + max(model_id))
+  )
+```
+
+```{r data1_sim, fig.height = 3, fig.width = 4}
+ggplot(sim_mod) + geom_point(aes(
   x = bbmsy_median, y = ffmsy_median,
   colour = model_id, group = model_id
 )) +
   scale_colour_viridis_c()
 ```
 
-```{r data2_g3, fig.height = 3, fig.width = 4}
-ggplot(simg3_mod) + geom_point(aes(
+```{r data2_sim, fig.height = 3, fig.width = 4}
+ggplot(sim_mod) + geom_point(aes(
   x = fo_median, y = ffmsy_median,
   colour = model_id, group = model_id
 )) +
@@ -234,7 +247,7 @@ ggplot(simg3_mod) + geom_point(aes(
 Reshape data for fitting:
 
 ```{r}
-df <- simg3_mod %>%
+df <- sim_mod %>%
       dplyr::select(fo_median, ffmsy_median, bbmsy_median) %>%
       scale()
 head(df)
@@ -242,7 +255,7 @@ head(df)
 
 The rows are our various models and the columns represent different parameters of interest.
 
-SOM training grid:
+SOM training grid. The simulation required a smaller number of grid cells because otherwise some of the grid cells were not populated.
 
 ```{r, warning=FALSE, results="hide"}
 som_grid <- kohonen::somgrid(xdim = 2, ydim = 2, topo = "hexagonal")
@@ -259,7 +272,7 @@ som_model <- kohonen::som(df,
  )
 ```
 
-Check convergence: 
+Check convergence. In the simulation, the SOM algorithm did not converge. 
 
 ```{r}
 plot(som_model, type = "changes")
@@ -268,9 +281,9 @@ plot(som_model, type = "changes")
 
 SOM visualisation:
 
-```{r multi_g3, fig.height = 9, fig.width = 6}
+```{r multi_sim, fig.height = 9, fig.width = 6}
 clusterthat::plot_som(som_model,
-   data = df, colour_vector = simg3_mod$fmodel,
+   data = df, colour_vector = sim_mod$fmodel,
    colour_label = "F model",
    nrow = 3
  )
@@ -278,7 +291,7 @@ clusterthat::plot_som(som_model,
 
 The `kohonen` R package 'codes' figure:
 
-```{r codes_g3, fight.height=5, fig.width = 6}
+```{r codes_sim, fight.height=5, fig.width = 6}
 plot(som_model, type = "codes", shape = "straight")
 ```
 
@@ -289,3 +302,11 @@ factoextra::fviz_nbclust(df, cluster::pam, method = "silhouette",
   k.max = 6)
 ```
 
+```{r cluster_sim, fig.height = 4, fig.width = 6}
+## use hierarchical clustering to cluster the codebook vectors
+som_cluster <- cutree(hclust(dist(som_model$codes[[1]])), 2)
+# plot these results:
+colours <- viridisLite::viridis(2)
+plot(som_model, type = "mapping", main = "Clusters", bgcol = colours[som_cluster], shape = "straight")
+add.cluster.boundaries(som_model, som_cluster)
+```
