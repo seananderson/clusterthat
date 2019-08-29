@@ -1,4 +1,12 @@
 
+# to create the fits.data file in this folder, from
+# the outputs created by the groups scripts, use:
+#
+# fits <- lapply(fits, "[", c("stk", "fit", "model", "rp"))
+# save(fits, fo, ffmsy, bbmsy, wts, file = "fits.rdata")
+#
+# this takes it from ~ 1 GB to ~ 5 MB
+
 library(FLCore)
 library(FLa4a)
 load("data-raw/fits.rdata")
