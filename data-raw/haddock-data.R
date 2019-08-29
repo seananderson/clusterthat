@@ -12,5 +12,8 @@ haddock_ts <- dplyr::filter(haddock_ts, !is.na(data))
 haddock_ts <- tibble::as_tibble(haddock_ts)
 haddock_mod <- tibble::as_tibble(haddock_mod)
 
+haddock_ts <- reshape2::dcast(haddock_ts, year + model_id ~ what, value.var = "data") %>%
+  tibble::as_tibble(haddock_ts)
+
 usethis::use_data(haddock_mod, overwrite = TRUE)
 usethis::use_data(haddock_ts, overwrite = TRUE)
