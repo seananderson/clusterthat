@@ -1,0 +1,120 @@
+---
+title: "Fisheries ensemble self-organized map example"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{som-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(clusterthat)
+library(ggplot2)
+library(dplyr)
+library(kohonen)
+theme_set(theme_minimal())
+```
+
+# An example of clustering with self-organising maps
+
+Self-organising maps (SOM) are an unsupervised categorisation technique to better visualise high-dimensional datasets in lower dimensions, placing similar objects next to each other onto a constant grid. 
+
+The SOM algorithm involves randomly assigning a value to each grid cell. The algorithm then considers observations one at a time. For each observation, it finds the grid cell with the nearest value according to the distance metric and changes the grid cell value by taking a weighted mean of the grid cell value and the proposed value. The weighting corresponds to the learning rate. The algorithm also adjusts nearby grid cells, and over the iterations, reduces the number of nearby grid cells until it's only considering each individual grid cell. With more iterations, the learning rate decreases. This approach results in nearby grid cells being more similar to each other than further away grid cells in the final map.
+
+The R package `kohonen` includes functions to implement the SOMs. Here we demonstrate an example with the `kohonen` package.
+
+<https://CRAN.R-project.org/package=kohonen>
+<https://www.jstatsoft.org/article/view/v021i05>
+
+```{r som-fit, fig.height = 3, fig.width = 4}
+ggplot(haddock_mod) + geom_point(aes(
+  x = bbmsy_median, y = ffmsy_median,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+First we need to reshape our data for fitting:
+
+```{r}
+df <- haddock_mod %>%
+      dplyr::select(ffmsy_median, bbmsy_median) %>%
+      scale()
+head(df)
+```
+
+The rows are our various models and the columns represent different values of interest - in this case F/Fmsy and B/Bmsy in the last year of the model.
+
+Next we create the size of the SOM training grid. The dimensions are chosen aiming for 5-10 units per class. In this case we chose 6 classes to cover 44 stock assessment model runs.
+
+```{r, warning=FALSE, results="hide"}
+som_grid <- kohonen::somgrid(xdim = 3, ydim = 2, topo = "hexagonal")
+```
+
+Finally, we train the SOM, with options for the iterations, the learning rates, and the grid neighborhood. The first alpha is the learning rate at the beginning of the algorithm, and the second alpha is the learning rate at the end. 
+
+```{r}
+som_model <- kohonen::som(df,
+   grid = som_grid,
+   rlen = 500,
+   alpha = c(0.05, 0.01),
+   keep.data = TRUE
+ )
+```
+
+Next we check that the SOM algorithm has converged by making sure that the learning rate reaches an asymptote after the designated number of iterations. 
+```{r}
+plot(som_model, type = "changes")
+```
+
+We can now visualise the SOM to look at a single map or multiple maps at a time. The values that can be displayed in an individual SOM (specified using the argument `val`) include "Count", the number of observations in each class, or the name of a value of interest from the original dataset.
+
+```{r indiv, fig.height = 5, fig.width = 6}
+clusterthat::plot_som_individual(som_model,
+   data = df, val = "Count",
+   colour_vector = haddock_mod$fmodel,
+   colour_label = "F model"
+ )
+```
+
+We can also plot multiple SOMs at the same time to tell a story about how values of interest relate to one another across the grid.
+
+```{r multi, fig.height = 7, fig.width = 6}
+clusterthat::plot_som(som_model,
+   data = df, colour_vector = haddock_mod$fmodel,
+   colour_label = "F model",
+   nrow = 2
+ )
+```
+
+The `kohonen` R package also includes many other figures for visualising SOMs. The following figure essentially combines the SOMs above showing the values of each parameter of interest on the same figure.  
+
+```{r codes, fight.height=5, fig.width = 6}
+plot(som_model, type = "codes")
+```
+
+We can also apply hierarchical clustering to further limit the dimensions of the clustered groups. 
+
+```{r cluster, fig.height = 4, fig.width = 6}
+par(mfrow=c(1,2))
+mydata <- som_model$codes[[1]]
+wss <- (nrow(mydata) - 1) * sum(apply(mydata, 2, var))
+for (i in 2:5) {
+  wss[i] <- sum(kmeans(mydata, centers = i)$withinss)
+}
+plot(wss, type = "o")
+
+## use hierarchical clustering to cluster the codebook vectors
+som_cluster <- cutree(hclust(dist(som_model$codes[[1]])), 3)
+# plot these results:
+colours <- viridisLite::viridis(3)
+plot(som_model, type = "mapping", main = "Clusters", bgcol = colours[som_cluster])
+add.cluster.boundaries(som_model, som_cluster)
+```
