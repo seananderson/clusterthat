@@ -33,42 +33,43 @@ not yet!
 }
 \examples{
 
-library(dplyr)
-
 # get data
 data(haddock_mod)
 df <-
   haddock_mod \%>\%
-  select(fo_median, ffmsy_median, bbmsy_median)
+  dplyr::select(fo_median, ffmsy_median, bbmsy_median) \%>\%
+  scale()
 
-# perform simple clustering on a few quantities
-m <-
-  df \%>\% kmeans(centers = 2)
+# Illustrate an example with 2 clusters:
+m <- kmeans(df, centers = 2L)
 
-# a plot
-factoextra::fviz_cluster(m, data = df, axis = c(1,2))
+plot_clusters(m,
+  data = df, colour_vector = haddock_mod$fmodel,
+  colour_label = "F model"
+)
 
 # calculate weighting?
-df$cluster <- m$cluster
+weights <-
+  haddock_mod \%>\%
+  dplyr::select(model_id, ffmsy_median, cgcv)
+weights$cluster <- m$cluster
+
 
 # do a simple ensemble - no weighting
-df \%>\%
+weights \%>\%
   mutate(
     ens_simple = ensemble_simple(ffmsy_median)
   )
 
 # do a simple cluster ensemble - no weighting
-df \%>\%
+weights \%>\%
   group_by(cluster) \%>\%
   mutate(
     ens_cluster = ensemble_simple(ffmsy_median)
   )
 
-
-# fake skill measure for now
-df$cgcv <- runif(nrow(df),0,1)
-
-df \%>\%
+# use skill level from cgcv
+weights \%>\%
   mutate(
     ens_cluster_wts  = ensemble_2stage_weights(cluster, cgcv)
   ) \%>\%
