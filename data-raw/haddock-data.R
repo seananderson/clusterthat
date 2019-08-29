@@ -9,7 +9,7 @@
 
 library(FLCore)
 library(FLa4a)
-load("data-raw/fits.rdata")
+load("data-raw/fits_haddock.rdata")
 
 haddock_ts <- clusterthat::fits2data_ts(fits2)
 haddock_mod <- clusterthat::fits2data_mod(fits2, fo, ffmsy, bbmsy)
