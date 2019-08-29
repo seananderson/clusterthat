@@ -14,6 +14,8 @@
 #' @importFrom ggplot2 aes_string scale_colour_brewer ggplot geom_point
 #' geom_polygon labs
 #'
+# @examples
+# m <- kmeans(haddock_mod, 2)
 # plot_clusters(m, data = df, colour_vector = .d$fmodel,
 # colour_label = "F model")
 
