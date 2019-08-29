@@ -55,7 +55,7 @@ plot_som_individual <- function(model, data, val, colour_vector = NULL,
   )
 
   ## number of models in each class
-  count <- data.frame(table(class$Class))[, "Freq"]
+  count <- sapply(1:nrow(model$grid$pts), function(x) length(which(class$Class == x)))
 
   ## grid for plotting hexagons
   grid <- data.frame(model$grid$pts, Class = 1:nrow(model$grid$pts), Count = count)
