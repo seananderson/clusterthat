@@ -22,7 +22,8 @@ Imports:
     tidyr,
     rlang,
     purrr,
-    cowplot
+    cowplot,
+    FLCore
 Suggests:
     testthat,
     knitr,
