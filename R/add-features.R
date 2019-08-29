@@ -29,6 +29,10 @@ add_features_flr <- function(data_mod, data_ts, n_years_slope = 5) {
   d <- dplyr::filter(d, !is.na(ssb_slope))
 
   dplyr::transmute(d,
+    model_id = model_id,
+    rmodel = rmodel,
+    qmodel = qmodel,
+    fmodel = fmodel,
     log_fo_median = log(fo_median), log_fo_cv = log(fo_cv),
     fbar_slope = fbar_slope, ssb_slope = ssb_slope,
     log_ffmsy_median = log(ffmsy_median),
