@@ -8,11 +8,13 @@ plot_clusters(model, data = NULL, colour_vector = NULL,
   colour_label = "model", ...)
 }
 \arguments{
-\item{model}{An object of class "partition" created by the functions \code{\link[cluster:pam]{cluster::pam()}} or \code{\link[stats:kmeans]{stats::kmeans()}}.}
+\item{model}{An object of class "partition" created by the functions
+\code{\link[cluster:pam]{cluster::pam()}} or \code{\link[stats:kmeans]{stats::kmeans()}}.}
 
 \item{data}{The original data frame used in the clustering.}
 
-\item{colour_vector}{A vector of character or factors to colour the points by.}
+\item{colour_vector}{A vector of character or factors to colour the points
+by.}
 
 \item{colour_label}{A label for the colour legend.}
 
