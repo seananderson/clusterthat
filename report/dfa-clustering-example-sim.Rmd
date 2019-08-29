@@ -1,0 +1,166 @@
+---
+title: "Dynamic Factor Analysis ensemble clustering for the simulation"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(clusterthat)
+library(ggplot2)
+library(dplyr)
+library(bayesdfa)
+theme_set(theme_minimal())
+options(mc.cores = parallel::detectCores())
+```
+
+# An example of clustering with Bayesian Dynamic Factor Analysis
+
+Dynamic Factor Analysis (DFA) is a timeseries dimension reduction technique that estimates a shared set of trends and loading factors on those trends for the various timeseries. bayesdfa fits Bayesian DFA via a model written in Stan. Here we will demonstrate an example with the bayesdfa package.
+
+<https://CRAN.R-project.org/package=bayesdfa>
+<http://rjournal.github.io/archive/2019/RJ-2019-007/index.html>
+
+```{r dfa-fit}
+ggplot(simg3_ts) + geom_line(aes(
+  x = year, y = fbar,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+
+simg3_ts$ssb[simg3_ts$ssb > 3e5] <- 3e5
+ggplot(simg3_ts) + geom_line(aes(
+  x = year, y = ssb,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+First we need to reshape our data for fitting:
+
+```{r}
+df <- simg3_ts %>%
+  reshape2::dcast(year ~ model_id, value.var = "fbar") %>%
+  dplyr::select(-year)
+
+df_ssb <- simg3_ts %>%
+  reshape2::dcast(year ~ model_id, value.var = "ssb") %>%
+  dplyr::select(-year)
+```
+
+The columns are our various models and the rows represent years.
+
+We will fit a model with 1 and 2 underlying trends for speed.
+
+```{r dfa-fit-sim, warning=FALSE, results="hide", cache=TRUE}
+# m_fbar1 <- fit_dfa(y = df, num_trends = 1, chains = 4, iter = 350, data_shape = "long")
+# m_ssb1 <- fit_dfa(y = df_ssb, num_trends = 1, chains = 4, iter = 350, data_shape = "long")
+
+m_fbar2 <- fit_dfa(y = df, num_trends = 2, chains = 4, iter = 350, data_shape = "long")
+m_ssb2 <- fit_dfa(y = df_ssb, num_trends = 2, chains = 4, iter = 350, data_shape = "long")
+```
+
+Now compare the leave-one-out information criteria:
+
+```{r}
+# loo(m_fbar1)
+loo(m_fbar2)
+
+# loo(m_ssb1)
+loo(m_ssb2)
+```
+
+
+We will apply a varimax rotation to describe as much of the variation in the initial trend and then plot the underlying trends:
+
+```{r}
+rot_fbar2 <- rotate_trends(m_fbar2)
+plot_trends(rot_fbar2)
+
+rot_ssb2 <- rotate_trends(m_ssb2)
+plot_trends(rot_ssb2)
+```
+
+We can also plot the loadings:
+
+```{r, warnings = FALSE}
+g_fbar2 <- plot_loadings(rot_fbar2)
+# remove colour if desired:
+g_fbar2$layers[[1]] <- NULL
+g_fbar2 + geom_violin(colour = NA, fill = "grey30") +
+  coord_flip(ylim = c(-0.7, 1.3))
+
+
+g_ssb2 <- plot_loadings(rot_ssb2)
+# remove colour if desired:
+g_ssb2$layers[[1]] <- NULL
+g_ssb2 + geom_violin(colour = NA, fill = "grey30") +
+  coord_flip(ylim = c(-0.2, 1))
+```
+
+We can now use the loadings in a clustering analysis.
+
+The following are our rotated loadings. We will reshape them into a data frame.
+
+```{r}
+dfa_loadings_fbar <- rot_fbar2$Z_rot_mean %>%
+  reshape2::melt() %>%
+  rename(time = Var1, model_id = Var2, loading = value) %>%
+  reshape2::dcast(time ~ model_id, value.var = "loading")
+
+dfa_loadings_ssb <- rot_ssb2$Z_rot_mean %>%
+  reshape2::melt() %>%
+  rename(time = Var1, model_id = Var2, loading = value) %>%
+  reshape2::dcast(time ~ model_id, value.var = "loading")
+```
+
+Now we can apply any of our clustering algorithms to these loadings:
+
+```{r}
+factoextra::fviz_nbclust(dfa_loadings_fbar, cluster::pam, method = "silhouette")
+factoextra::fviz_nbclust(dfa_loadings_ssb, cluster::pam, method = "silhouette")
+
+m_cluster_dfa_fbar2 <- cluster::pam(dfa_loadings_fbar, k = 2L)
+plot_clusters(m_cluster_dfa_fbar2,
+  data = dfa_loadings_fbar,
+  colour_vector = as.factor(m_cluster_dfa_fbar2$clustering),
+  colour_label = "Cluster"
+)
+
+m_cluster_dfa_ssb2 <- cluster::pam(dfa_loadings_ssb, k = 2L)
+plot_clusters(m_cluster_dfa_ssb2,
+  data = dfa_loadings_ssb,
+  colour_vector = as.factor(m_cluster_dfa_ssb2$clustering),
+  colour_label = "Cluster"
+)
+```
+
+
+```{r}
+look_up <- data.frame(model_id = unique(simg3_ts$model_id),
+  cluster = m_cluster_dfa_fbar2$clustering)
+
+simg3_ts %>%
+  left_join(look_up) %>%
+  ggplot() + geom_line(aes(
+  x = year, y = fbar,
+  colour = as.factor(cluster), group = model_id
+)) +
+  scale_colour_viridis_d()
+
+
+look_up <- data.frame(model_id = unique(simg3_ts$model_id),
+  cluster = m_cluster_dfa_ssb2$clustering)
+
+simg3_ts %>%
+  left_join(look_up) %>%
+  ggplot() + geom_line(aes(
+  x = year, y = ssb,
+  colour = as.factor(cluster), group = model_id
+)) +
+  scale_colour_viridis_d()
+```
