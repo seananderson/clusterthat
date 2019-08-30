@@ -1,0 +1,132 @@
+---
+title: "Fisheries ensemble self-organized map: Icelandic cod"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{som-example}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(clusterthat)
+library(ggplot2)
+library(dplyr)
+library(kohonen)
+theme_set(theme_minimal())
+```
+
+## Self-organising maps
+
+Self-organising maps (SOM) are an unsupervised categorisation technique to better visualise high-dimensional datasets in lower dimensions, placing similar objects next to each other onto a constant grid. 
+
+The SOM algorithm involves randomly assigning a value to each grid cell. The algorithm then considers observations one at a time. For each observation, it finds the grid cell with the nearest value according to the distance metric and changes the grid cell value by taking a weighted mean of the grid cell value and the proposed value. The weighting corresponds to the learning rate. The algorithm also adjusts nearby grid cells, and over the iterations, reduces the number of nearby grid cells until it's only considering each individual grid cell. With more iterations, the learning rate decreases. This approach results in nearby grid cells being more similar to each other than further away grid cells in the final map.
+
+The R package `kohonen` includes functions to implement the SOMs. Here we demonstrate an example with the `kohonen` package.
+
+<https://CRAN.R-project.org/package=kohonen>
+<https://www.jstatsoft.org/article/view/v021i05>
+
+## Icelandic cod
+
+Here we explore SOMs for 49 stock assessment model runs for Icelandic cod, exploring the "fishing opportunity" (i.e. catch, fo_median), estimated fishing mortality rate in the last year of the model relative to the fishing mortality rate that would produce MSY (ffmsy_median) and the estimated biomass in the last year of the model relative to the biomass that would lead to MSY (bbmsy_median).
+
+```{r data1, fig.height = 3, fig.width = 4}
+ggplot(cod_mod) + geom_point(aes(
+  x = bbmsy_median, y = ffmsy_median,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+```{r data2, fig.height = 3, fig.width = 4}
+ggplot(cod_mod) + geom_point(aes(
+  x = fo_median, y = ffmsy_median,
+  colour = model_id, group = model_id
+)) +
+  scale_colour_viridis_c()
+```
+
+First we need to reshape our data for fitting.
+
+```{r}
+df <- cod_mod %>%
+      dplyr::select(fo_median, ffmsy_median, bbmsy_median) %>%
+      scale()
+head(df)
+```
+
+The rows are our various models and the columns represent different parameters of interest.
+
+Next we create the size of the SOM training grid. The dimensions are chosen aiming for 5-10 units per class. In this case we chose 6 classes to cover 49 stock assessment model runs.
+
+```{r, warning=FALSE, results="hide"}
+som_grid <- kohonen::somgrid(xdim = 3, ydim = 2, topo = "hexagonal")
+```
+
+Finally, we train the SOM, with options for the iterations, the learning rates, and the grid neighborhood. The first alpha is the learning rate at the beginning of the algorithm, and the second alpha is the learning rate at the end. 
+
+```{r}
+som_model <- kohonen::som(df,
+   grid = som_grid,
+   rlen = 500,
+   alpha = c(0.05, 0.01),
+   keep.data = TRUE
+ )
+```
+
+Next we check that the SOM algorithm has converged by making sure that the learning rate reaches an asymptote after the designated number of iterations. 
+```{r}
+plot(som_model, type = "changes")
+```
+
+We can now visualise the SOM to look at a single map or multiple maps at a time. The values that can be displayed in an individual SOM (specified using the argument `val`) include "Count", the number of observations in each class, or the name of a value of interest from the original dataset.
+
+```{r indiv, fig.height = 5, fig.width = 6}
+clusterthat::plot_som_individual(som_model,
+   data = df, val = "Count",
+   colour_vector = cod_mod$fmodel,
+   colour_label = "F model"
+ )
+```
+
+We can also plot multiple SOMs at the same time to tell a story about how values of interest relate to one another across the grid.
+
+```{r multi, fig.height = 9, fig.width = 6}
+clusterthat::plot_som(som_model,
+   data = df, colour_vector = cod_mod$fmodel,
+   colour_label = "F model",
+   nrow = 3
+ )
+```
+
+The `kohonen` R package also includes many other figures for visualising SOMs. The following figure essentially combines the SOMs above showing the values of each parameter of interest on the same figure.  
+
+```{r codes, fight.height=5, fig.width = 6}
+plot(som_model, type = "codes", shape = "straight")
+```
+
+We can also apply hierarchical clustering to further limit the dimensions of the clustered groups. We recommend using the `cluster::pam` function to evaluate the number of clusters. 
+
+```{r}
+factoextra::fviz_nbclust(df, cluster::pam, method = "silhouette",
+  k.max = 6)
+```
+
+In this case, two clusters had the highest silhoutte width. 
+
+```{r cluster, fig.height = 4, fig.width = 6}
+## use hierarchical clustering to cluster the codebook vectors
+som_cluster <- cutree(hclust(dist(som_model$codes[[1]])), 2)
+# plot these results:
+colours <- viridisLite::viridis(2)
+plot(som_model, type = "mapping", main = "Clusters", bgcol = colours[som_cluster], shape = "straight")
+add.cluster.boundaries(som_model, som_cluster)
+```
+
