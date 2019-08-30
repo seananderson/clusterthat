@@ -55,12 +55,11 @@
 #' # use skill level from cgcv
 #' weights %>%
 #'   dplyr::mutate(
-#'     ens_cluster_wts  = ensemble_2stage_weights(cluster, cgcv)
+#'     ens_cluster_wts = ensemble_2stage_weights(cluster, cgcv)
 #'   ) %>%
 #'   dplyr::mutate(
 #'     ens_cluster = ensemble_simple(ffmsy_median, ens_cluster_wts)
 #'   )
-#'
 #' @rdname ensemble
 #' @name ensembleMethods
 NULL
@@ -88,7 +87,7 @@ ensemble_2stage_weights <- function(cluster, weights = NULL) {
 
   # create a df
   .data <- data.frame(cluster = factor(cluster))
-  .data$weights <- if(is.null(weights)) 1 else weights
+  .data$weights <- if (is.null(weights)) 1 else weights
 
   # total number of clusters
   .data$nclusters <- length(unique(cluster))
@@ -96,15 +95,17 @@ ensemble_2stage_weights <- function(cluster, weights = NULL) {
   # get all the bits of info we need
   .data <-
     .data %>%
-      dplyr::group_by(cluster) %>%
-      dplyr::mutate(cluster_size = dplyr::n(),
-                    cluster_skill = mean(weights)) %>%
-      dplyr::ungroup()
+    dplyr::group_by(cluster) %>%
+    dplyr::mutate(
+      cluster_size = dplyr::n(),
+      cluster_skill = mean(weights)
+    ) %>%
+    dplyr::ungroup()
 
   # compute 2-stage weights
   .data <-
     .data %>%
-    dplyr::mutate(cluster_weight = cluster_skill / (cluster_size * nclusters)  )
+    dplyr::mutate(cluster_weight = cluster_skill / (cluster_size * nclusters))
 
   # return weights
   .data$cluster_weight

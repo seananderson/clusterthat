@@ -71,10 +71,9 @@ weights \%>\%
 # use skill level from cgcv
 weights \%>\%
   dplyr::mutate(
-    ens_cluster_wts  = ensemble_2stage_weights(cluster, cgcv)
+    ens_cluster_wts = ensemble_2stage_weights(cluster, cgcv)
   ) \%>\%
   dplyr::mutate(
     ens_cluster = ensemble_simple(ffmsy_median, ens_cluster_wts)
   )
-
 }

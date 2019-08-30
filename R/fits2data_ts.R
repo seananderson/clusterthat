@@ -11,13 +11,15 @@ fits2data_ts <- function(fits) {
   df <-
     do.call(
       rbind,
-        lapply(fits, function(fit) {
-          x <- fit$stk + fit$fit
-          rbind(cbind(what = "ssb", FLCore::as.data.frame(ssb(x))),
-                cbind(what = "fbar", FLCore::as.data.frame(fbar(x)))) %>%
-            dplyr::select(year, .data$data, .data$what) %>%
-            dplyr::mutate(model_id = fit$model$model_id)
-        })
+      lapply(fits, function(fit) {
+        x <- fit$stk + fit$fit
+        rbind(
+          cbind(what = "ssb", FLCore::as.data.frame(ssb(x))),
+          cbind(what = "fbar", FLCore::as.data.frame(fbar(x)))
+        ) %>%
+          dplyr::select(year, .data$data, .data$what) %>%
+          dplyr::mutate(model_id = fit$model$model_id)
+      })
     )
   rownames(df) <- NULL
 

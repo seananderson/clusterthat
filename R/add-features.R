@@ -51,10 +51,12 @@ ts_model <- function(df, years_of_interest) {
 if (getRversion() >= "2.15.1") utils::globalVariables(c("."))
 if (getRversion() >= "2.15.1") {
   utils::globalVariables(
-    c("bbmsy_cv", "bbmsy_median", "data", "fbar", "fbar_slope", "ffmsy_cv",
+    c(
+      "bbmsy_cv", "bbmsy_median", "data", "fbar", "fbar_slope", "ffmsy_cv",
       "ffmsy_median",
       "nclusters", "cluster_size", "cluster_skill",
       "fo_cv", "fo_median", "model", "slope", "ssb",
-      "ssb_slope", "year", "rmodel", "fmodel", "qmodel", "model_id")
+      "ssb_slope", "year", "rmodel", "fmodel", "qmodel", "model_id"
+    )
   )
 }
