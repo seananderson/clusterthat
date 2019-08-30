@@ -42,6 +42,16 @@ usethis::use_data(redgrouper_ts, overwrite = TRUE)
 usethis::use_data(redgrouper_mod, overwrite = TRUE)
 
 
+# pollock
+
+load("data-raw/fits_pollock.rdata")
+
+pollock_ts <- clusterthat::fits2data_ts(fits2)
+pollock_mod <- clusterthat::fits2data_mod(fits2, fo, ffmsy, bbmsy, wts)
+
+usethis::use_data(pollock_ts, overwrite = TRUE)
+usethis::use_data(pollock_mod, overwrite = TRUE)
+
 # g3 sims
 
 load("data-raw/fits_g3.rdata")
