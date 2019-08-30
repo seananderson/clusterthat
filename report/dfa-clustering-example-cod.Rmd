@@ -1,5 +1,5 @@
 ---
-title: "Dynamic Factor Analysis ensemble clustering for the simulation"
+title: "Dynamic Factor Analysis ensemble clustering for cod"
 ---
 
 ```{r, include = FALSE}
@@ -26,14 +26,13 @@ Dynamic Factor Analysis (DFA) is a timeseries dimension reduction technique that
 <http://rjournal.github.io/archive/2019/RJ-2019-007/index.html>
 
 ```{r dfa-fit}
-ggplot(simg3_ts) + geom_line(aes(
+ggplot(cod_ts) + geom_line(aes(
   x = year, y = fbar,
   colour = model_id, group = model_id
 )) +
   scale_colour_viridis_c()
 
-simg3_ts$ssb[simg3_ts$ssb > 3e5] <- 3e5
-ggplot(simg3_ts) + geom_line(aes(
+ggplot(cod_ts) + geom_line(aes(
   x = year, y = ssb,
   colour = model_id, group = model_id
 )) +
@@ -57,11 +56,11 @@ The columns are our various models and the rows represent years.
 We will fit a model with 1 and 2 underlying trends for speed.
 
 ```{r dfa-fit-sim, warning=FALSE, results="hide", cache=TRUE}
-# m_fbar1 <- fit_dfa(y = df, num_trends = 1, chains = 4, iter = 350, data_shape = "long")
-# m_ssb1 <- fit_dfa(y = df_ssb, num_trends = 1, chains = 4, iter = 350, data_shape = "long")
+m_fbar1 <- fit_dfa(y = df, num_trends = 1, chains = 1, iter = 350, data_shape = "long")
+m_ssb1 <- fit_dfa(y = df_ssb, num_trends = 1, chains = 1, iter = 350, data_shape = "long")
 
-m_fbar2 <- fit_dfa(y = df, num_trends = 1, chains = 1, iter = 350, data_shape = "long")
-m_ssb2 <- fit_dfa(y = df_ssb, num_trends = 1, chains = 1, iter = 350, data_shape = "long")
+m_fbar2 <- fit_dfa(y = df, num_trends = 2, chains = 1, iter = 350, data_shape = "long")
+m_ssb2 <- fit_dfa(y = df_ssb, num_trends = 2, chains = 1, iter = 350, data_shape = "long")
 ```
 
 Now compare the leave-one-out information criteria:

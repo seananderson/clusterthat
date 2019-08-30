@@ -17,6 +17,7 @@ First, load our package:
 
 ```{r setup}
 library(clusterthat)
+library(dplyr)
 ```
 
 We will work with the example haddock data. Let's add some features from the timeseries data into our model data set that we will use for the clustering.
@@ -47,8 +48,8 @@ df_scaled <- dplyr::select(df, -model_id, -rmodel, -qmodel, -fmodel) %>%
 We can evaluate the support from various numbers of clusters using the following techniques :
 
 ```{r}
-factoextra::fviz_nbclust(df_scaled, cluster::pam, method = "silhouette",
-  k.max = 25)
+factoextra::fviz_nbclust(df_scaled, cluster::pam, method = "gap_stat",
+  k.max = 35)
 ```
 
 We are looking for a number of clusters where the average silhouette width hits a maximum. The average silhouette width reaches a maximum at 4 clusters. We will work with that number here on in.
@@ -62,7 +63,7 @@ plot_clusters(m_pam, data = df_scaled, colour_vector = as.factor(m_pam$clusterin
 The default dissimilarity metric is the euclidean distance (the root of the sum of squares of differences). An alternative is the "manhattan" dissimilarity metric which represents the sum of the absolute differences. The manhattan metric can be a bit more robust to outliers, but in most cases it should render nearly the same result as the euclidean metric.
 
 ```{r, warnings = FALSE}
-factoextra::fviz_nbclust(df_scaled, cluster::pam, method = "silhouette",
+factoextra::fviz_nbclust(df_scaled, cluster::pam, method = "gap_stat",
   metric = "manhattan", k.max = 25)
 
 m_pam_manhattan <- cluster::pam(df_scaled, k = 21, metric = "manhattan")

@@ -124,6 +124,9 @@ Now we can apply any of our clustering algorithms to these loadings:
 factoextra::fviz_nbclust(dfa_loadings_fbar, cluster::pam, method = "silhouette")
 factoextra::fviz_nbclust(dfa_loadings_ssb, cluster::pam, method = "silhouette")
 
+factoextra::fviz_nbclust(dfa_loadings_fbar, cluster::pam, method = "gap_stat")
+factoextra::fviz_nbclust(dfa_loadings_ssb, cluster::pam, method = "gap_stat")
+
 m_cluster_dfa_fbar2 <- cluster::pam(dfa_loadings_fbar, k = 2L)
 plot_clusters(m_cluster_dfa_fbar2,
   data = dfa_loadings_fbar,
