@@ -66,11 +66,13 @@ The columns are our various models and the rows represent years.
 We will fit a model with 1 and 2 underlying trends for speed.
 
 ```{r dfa-fitting, warning=FALSE, results="hide", cache=TRUE}
-m_fbar <- find_dfa_trends(y = df, kmin = 1, kmax = 2, iter = 150,
-  convergence_threshold = 1.2, variance = c("equal"), data_shape = "long")
+m_fbar <- find_dfa_trends(y = df, kmin = 1, kmax = 2, iter = 300,
+  chains = 1,
+  convergence_threshold = 1.6, variance = c("equal"), data_shape = "long")
 
-m_ssb <- find_dfa_trends(y = df_ssb, kmin = 1, kmax = 2, iter = 150,
-  convergence_threshold = 1.2, variance = c("equal"), data_shape = "long")
+m_ssb <- find_dfa_trends(y = df_ssb, kmin = 1, kmax = 2, iter = 300,
+  chains = 1,
+  convergence_threshold = 1.6, variance = c("equal"), data_shape = "long")
 ```
 
 Now compare the leave-one-out information criteria:
@@ -118,19 +120,23 @@ The following are our rotated loadings. We will reshape them into a data frame.
 dfa_loadings_fbar <- rot_fbar$Z_rot_mean %>%
   reshape2::melt() %>%
   rename(time = Var1, model_id = Var2, loading = value) %>%
-  reshape2::dcast(time ~ model_id, value.var = "loading")
+  reshape2::dcast(time ~ model_id, value.var = "loading") %>% 
+  dplyr::select(-time)
 
 dfa_loadings_ssb <- rot_ssb$Z_rot_mean %>%
   reshape2::melt() %>%
   rename(time = Var1, model_id = Var2, loading = value) %>%
-  reshape2::dcast(time ~ model_id, value.var = "loading")
+  reshape2::dcast(time ~ model_id, value.var = "loading") %>% 
+  dplyr::select(-time)
+
+head(dfa_loadings_ssb)
 ```
 
 Now we can apply any of our clustering algorithms to these loadings:
 
 ```{r}
-factoextra::fviz_nbclust(dfa_loadings_fbar, cluster::pam, method = "silhouette")
-factoextra::fviz_nbclust(dfa_loadings_ssb, cluster::pam, method = "silhouette")
+# factoextra::fviz_nbclust(dfa_loadings_fbar, cluster::pam, method = "silhouette")
+# factoextra::fviz_nbclust(dfa_loadings_ssb, cluster::pam, method = "silhouette")
 
 factoextra::fviz_nbclust(dfa_loadings_fbar, cluster::pam, method = "gap_stat")
 factoextra::fviz_nbclust(dfa_loadings_ssb, cluster::pam, method = "gap_stat")
@@ -146,14 +152,14 @@ detect_clusters_ssb <- cluster::clusGap(dfa_loadings_ssb, cluster::pam, K.max = 
 m_cluster_dfa_fbar <- cluster::pam(dfa_loadings_fbar, k = .k)
 plot_clusters(m_cluster_dfa_fbar,
   data = dfa_loadings_fbar,
-  colour_vector = as.factor(m_cluster_dfa_fbar2$clustering),
+  colour_vector = as.factor(m_cluster_dfa_fbar$clustering),
   colour_label = "Cluster"
 )
 
 m_cluster_dfa_ssb <- cluster::pam(dfa_loadings_ssb, k = .k_ssb)
 plot_clusters(m_cluster_dfa_ssb,
   data = dfa_loadings_ssb,
-  colour_vector = as.factor(m_cluster_dfa_ssb2$clustering),
+  colour_vector = as.factor(m_cluster_dfa_ssb$clustering),
   colour_label = "Cluster"
 )
 ```
