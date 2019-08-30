@@ -66,10 +66,10 @@ m_ssb2 <- fit_dfa(y = df_ssb, num_trends = 2, chains = 1, iter = 350, data_shape
 Now compare the leave-one-out information criteria:
 
 ```{r}
-# loo(m_fbar1)
+loo(m_fbar1)
 loo(m_fbar2)
 
-# loo(m_ssb1)
+loo(m_ssb1)
 loo(m_ssb2)
 ```
 
@@ -146,7 +146,7 @@ plot_clusters(m_cluster_dfa_ssb2,
 look_up <- data.frame(model_id = unique(simg3_ts$model_id),
   cluster = m_cluster_dfa_fbar2$clustering)
 
-simg3_ts %>%
+cod_ts %>%
   left_join(look_up) %>%
   ggplot() + geom_line(aes(
   x = year, y = fbar,
@@ -158,7 +158,7 @@ simg3_ts %>%
 look_up <- data.frame(model_id = unique(simg3_ts$model_id),
   cluster = m_cluster_dfa_ssb2$clustering)
 
-simg3_ts %>%
+cod_ts %>%
   left_join(look_up) %>%
   ggplot() + geom_line(aes(
   x = year, y = ssb,

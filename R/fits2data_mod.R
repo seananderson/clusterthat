@@ -6,6 +6,7 @@
 #' @param fo a matrix containing simulated values for each model
 #' @param ffmsy a matrix containing simulated values for each model
 #' @param bbmsy a matrix containing simulated values for each model
+#' @param wts a matrix containing weight values for each model
 #'
 #' @return A data.frame object
 #' @export

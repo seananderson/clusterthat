@@ -23,8 +23,6 @@ by.}
 
 \item{colour_label}{A label for the colour legend.}
 
-\item{...}{Other arguments to pass2 \code{\link[factoextra:fviz_cluster]{factoextra::fviz_cluster()}}.}
-
 \item{...}{Other arguments to past to \code{\link[cowplot:plot_grid]{cowplot::plot_grid()}}.}
 }
 \value{

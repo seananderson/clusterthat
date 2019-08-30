@@ -14,6 +14,8 @@ fits2data_mod(fits, fo, ffmsy, bbmsy, wts)
 \item{ffmsy}{a matrix containing simulated values for each model}
 
 \item{bbmsy}{a matrix containing simulated values for each model}
+
+\item{wts}{a matrix containing weight values for each model}
 }
 \value{
 A data.frame object

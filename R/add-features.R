@@ -55,6 +55,6 @@ if (getRversion() >= "2.15.1") {
       "ffmsy_median",
       "nclusters", "cluster_size", "cluster_skill",
       "fo_cv", "fo_median", "model", "slope", "ssb",
-      "ssb_slope", "year")
+      "ssb_slope", "year", "rmodel", "fmodel", "qmodel", "model_id")
   )
 }

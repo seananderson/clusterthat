@@ -6,7 +6,6 @@
 #' @param colour_vector A vector of character or factors to colour the points
 #'   by.
 #' @param colour_label A label for the colour legend.
-#' @param ... Other arguments to pass2 [factoextra::fviz_cluster()].
 #'
 #' @return A ggplot2 object.
 #' @export
@@ -71,7 +70,7 @@ plot_som_individual <- function(model, data, val, colour_vector = NULL,
   val_df <- val_df %>% mutate(Class = seq(1, nrow(val_df)))
 
   if(nrow(val_df)!=length(count)) warning("Some grid cells do not have any observations, please lower the number of grid cells.")
-  
+
   grid <- full_join(grid, val_df, by = "Class")
 
   ## data frame with class and grid info
