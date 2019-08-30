@@ -9,6 +9,9 @@
 
 library(FLCore)
 library(FLa4a)
+
+# haddock data
+
 load("data-raw/fits_haddock.rdata")
 
 haddock_ts <- clusterthat::fits2data_ts(fits2)
@@ -28,7 +31,7 @@ cod_mod <- clusterthat::fits2data_mod(fits2, fo, ffmsy, bbmsy, wts)
 usethis::use_data(cod_ts, overwrite = TRUE)
 usethis::use_data(cod_mod, overwrite = TRUE)
 
-# s3 sims
+# red grouper
 
 load("data-raw/fits_RedGrouper.rdata")
 
