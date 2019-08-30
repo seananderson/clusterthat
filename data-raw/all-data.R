@@ -28,6 +28,17 @@ cod_mod <- clusterthat::fits2data_mod(fits2, fo, ffmsy, bbmsy, wts)
 usethis::use_data(cod_ts, overwrite = TRUE)
 usethis::use_data(cod_mod, overwrite = TRUE)
 
+# s3 sims
+
+load("data-raw/fits_RedGrouper.rdata")
+
+redgrouper_ts <- clusterthat::fits2data_ts(fits2)
+redgrouper_mod <- clusterthat::fits2data_mod(fits2, fo, ffmsy, bbmsy, wts)
+
+usethis::use_data(redgrouper_ts, overwrite = TRUE)
+usethis::use_data(redgrouper_mod, overwrite = TRUE)
+
+
 # g3 sims
 
 load("data-raw/fits_g3.rdata")
