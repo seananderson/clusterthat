@@ -1,16 +1,24 @@
 Package: clusterthat
-Title: What the Package Does (One Line, Title Case)
+Title: Tools for Clustering Fisheries Ensemble Output
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
-License: GPL (>=2)
-Encoding: UTF-8
-LazyData: true
+    c(person(given = c("Sean", "C."),
+             family = "Anderson",
+             role = c("aut", "cre"),
+             email = "sean.anderson@dfo-mpo.gc.ca",
+             comment = c(ORCID = "0000-0001-9563-1937")),
+      person(given = c("Colin", "P."),
+             family = "Millar",
+             role = "aut",
+             email = "colinpmillar@googlemail.com"),
+      person(given = c("Merrill", "B."),
+             family = "Rudd",
+             role = "aut"))
+Description: Tools for clustering fisheries ensemble output and
+    examples of their application.
+License: EUPL
+Depends: 
+    R (>= 3.2.0)
 Imports:
     dplyr,
     ggplot2,
@@ -34,7 +42,10 @@ Suggests:
     kohonen,
     viridisLite,
     fda
-RoxygenNote: 6.1.1
+VignetteBuilder: 
+    knitr
+Additional_repositories: http://flr-project.org/R
+Encoding: UTF-8
+LazyData: true
 Roxygen: list(markdown = TRUE)
-Depends: R (>= 3.2.0)
-VignetteBuilder: knitr
+RoxygenNote: 6.1.1
