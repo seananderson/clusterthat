@@ -1,63 +1,38 @@
-#' Example model data
+#' Example model and time series data
 #'
-#' A data frame containing example data for haddock
-#'
-#' @format A data frame
+#' @format Data frames
+#' @rdname data
 "haddock_mod"
 
-#' Example timeseries data
-#'
-#' A data frame containing example data for haddock
-#'
-#' @format A data frame
+#' @rdname data
 "haddock_ts"
 
-
-
-#' Example timeseries data
-#'
-#' A data frame containing example data for cod
-#'
-#' @format A data frame
+#' @rdname data
 "cod_ts"
 
-#' Example model data
-#'
-#' A data frame containing example data for cod
-#'
-#' @format A data frame
+#' @rdname data
 "cod_mod"
 
-
-
-#' Example timeseries data
-#'
-#' A data frame containing example data for simulation s3
-#'
-#' @format A data frame
+#' @rdname data
 "sims3_ts"
 
-#' Example model data
-#'
-#' A data frame containing example data for simulation s3
-#'
-#' @format A data frame
+#' @rdname data
 "sims3_mod"
 
-
-
-
-
-#' Example timeseries data
-#'
-#' A data frame containing example data for simulation g3
-#'
-#' @format A data frame
+#' @rdname data
 "simg3_ts"
 
-#' Example model data
-#'
-#' A data frame containing example data for simulation g3
-#'
-#' @format A data frame
+#' @rdname data
 "simg3_mod"
+
+#' @rdname data
+"pollock_ts"
+
+#' @rdname data
+"pollock_mod"
+
+#' @rdname data
+"redgrouper_ts"
+
+#' @rdname data
+"redgrouper_mod"
