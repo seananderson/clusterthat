@@ -2,7 +2,7 @@
 title: "Fisheries ensemble self-organized map example"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{som-example}
+  %\VignetteIndexEntry{Self-organized map clustering example}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

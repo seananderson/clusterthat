@@ -20,7 +20,7 @@ add_features_flr <- function(data_mod, data_ts, n_years_slope = 5) {
       years_of_interest = years_of_interest
     )) %>%
     mutate(slope = purrr::map(model, ~ coef(.x)[[2]])) %>%
-    tidyr::unnest(slope, .drop = TRUE)
+    tidyr::unnest(slope)
 
   slopes <- reshape2::dcast(slopes, model_id ~ variable, value.var = "slope") %>%
     dplyr::rename(fbar_slope = .data$fbar, ssb_slope = .data$ssb)

@@ -2,7 +2,7 @@
 title: "Simple example of clustering and ensembling"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{simple-example}
+  %\VignetteIndexEntry{Simple example}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---

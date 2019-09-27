@@ -2,7 +2,7 @@
 title: "Dynamic Factor Analysis ensemble clustering example"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ensemble-example}
+  %\VignetteIndexEntry{DFA clustering example}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -50,7 +50,7 @@ The columns are our various models and the rows represent years.
 
 We will fit a model with 1 underlying trend for speed. We will only use one chain so that this runs quickly but you will likely want to use at least 4 and probably 1000 or greater iterations.
 
-```{r, warning=FALSE, results="hide"}
+```{r, warnings=FALSE, results="hide"}
 m2 <- fit_dfa(y = df, num_trends = 1, chains = 1, iter = 300, data_shape = "long")
 ```
 

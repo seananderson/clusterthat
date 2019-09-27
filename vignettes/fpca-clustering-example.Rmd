@@ -2,7 +2,7 @@
 title: "Functional Principle Component Analysis ensemble clustering example"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{ensemble-example}
+  %\VignetteIndexEntry{Functional PCA clustering example}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
