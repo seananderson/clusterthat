@@ -13,7 +13,10 @@ Authors@R:
              email = "colinpmillar@googlemail.com"),
       person(given = c("Merrill", "B."),
              family = "Rudd",
-             role = "aut"))
+             role = "aut"),
+      person(given = "Other members of the",
+             family = "NewSciFish working group.",
+             role = "ctb"))
 Description: Tools for clustering fisheries ensemble output and
     examples of their application.
 License: EUPL
